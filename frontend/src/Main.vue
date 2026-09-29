@@ -1,86 +1,216 @@
 <script setup lang="ts">
-import { computed, ref, provide } from 'vue'
-import MaterialView from './components/MaterialView.vue'
-import DeliveryView from './components/DeliveryView.vue'
-import AccountView from './components/AccountView.vue'
-import ReportsView from './components/ReportsView.vue'
-import CreateReportView from './components/CreateReportView.vue'
+import { computed, defineAsyncComponent, ref, onMounted, onUnmounted } from 'vue'
 import LandingView from './components/LandingView.vue'
-const showLanding = ref(true)
+import OverviewView from './components/OverviewView.vue'
+import { ACCOUNT_STORAGE_KEY, apiRequest, storedAccount, type Account } from './api'
+import { clearDamageReports } from './damageReports'
+import { useHeartbeat } from './useHeartbeat'
+import { useIdleTimeout } from './useIdleTimeout'
+
+defineOptions({ name: 'MainApp' })
+
+// Secondary pages are split into their own chunks and only downloaded when first opened.
+const MaterialView = defineAsyncComponent(() => import('./components/MaterialView.vue'))
+const DeliveryView = defineAsyncComponent(() => import('./components/DeliveryView.vue'))
+const AccountView = defineAsyncComponent(() => import('./components/AccountView.vue'))
+const ReportsView = defineAsyncComponent(() => import('./components/ReportsView.vue'))
+const CreateReportView = defineAsyncComponent(() => import('./components/CreateReportView.vue'))
+
+// --- Account and page state -------------------------------------------------------------------
+
+const currentAccount = ref<Account | null>(storedAccount())
+const showLanding = ref(!currentAccount.value)
+const logoutNotice = ref('')
+const active = ref('Hem')
 const showReportForm = ref(false)
-const currentAccount = ref<{ name: string; email: string; role: string; access_token: string } | null>(null)
+const openDamageOnMount = ref(false)
+
 const isAdmin = computed(() => currentAccount.value?.role === 'Admin')
-const handleLogin = (account?: { name: string; email: string; role: string; access_token: string }) => {
-  currentAccount.value = account ?? { name: 'Medlem', email: '', role: 'Medlem', access_token: '' }
+const accountInitials = computed(
+  () => currentAccount.value?.name.trim().slice(0, 2).toUpperCase() || '',
+)
+
+const handleLogin = (account: Account) => {
+  logoutNotice.value = ''
+  currentAccount.value = account
   showLanding.value = false
 }
-const pendingAccounts = ref<Array<{ name: string; email: string; submittedAt: string }>>([])
-provide('pendingAccounts', pendingAccounts)
-const active = ref('Hem')
-const nav = computed(() => ['Hem', 'Materiel', 'Leverans', ...(isAdmin.value ? ['Hantera konton'] : []), 'Rapporter', 'Inställningar'])
-const activities = [{ title: 'Ny leverans registrerad', description: 'Lager A · Sektion 3', time: '2 min sedan', color: 'blue', icon: '◇' }, { title: 'Lågt lagersaldo', description: 'Produkt #4821 · Lager B', time: '18 min sedan', color: 'amber', icon: '△' }, { title: 'Inventering slutförd', description: 'Lager C · Alla sektioner', time: '1 tim sedan', color: 'green', icon: '✓' }, { title: 'Rapport genererad', description: 'Månadsrapport · Oktober', time: '3 tim sedan', color: 'purple', icon: '▤' }]
-const overviewStatistics = [{ label: 'TOTALT LAGER', value: '1,284', unit: 'enheter', change: '+12' }, { label: 'LEVERERAS', value: '47', unit: 'enheter', change: '+3' }, { label: 'SKADAT', value: '8', unit: 'varningar', change: '-2' }]
-const warehouseCapacities = [{ name: 'Lager A', percentage: '78%', color: 'black' }, { name: 'Lager B', percentage: '61%', color: 'blue' }, { name: 'Lager C', percentage: '43%', color: 'green' }]
+
+const logout = () => {
+  // Record the logout time on the server. This starts before the token is cleared, and a failed
+  // request never blocks logging out.
+  if (currentAccount.value)
+    apiRequest('/logout', { method: 'POST', authenticated: true }).catch(() => {})
+  localStorage.removeItem(ACCOUNT_STORAGE_KEY)
+  clearDamageReports()
+  currentAccount.value = null
+  showAccountMenu.value = false
+  showReportForm.value = false
+  active.value = 'Hem'
+  showLanding.value = true
+}
+
+// --- Session: inactivity warning, automatic logout and heartbeat ------------------------------
+
+const { showWarning, secondsLeft, dismissWarning } = useIdleTimeout(
+  () => currentAccount.value !== null,
+  () => {
+    logout()
+    logoutNotice.value = 'Du har loggats ut på grund av inaktivitet.'
+  },
+)
+useHeartbeat(
+  () => currentAccount.value !== null,
+  () => showWarning.value,
+)
+
+const countdown = computed(
+  () => `${Math.floor(secondsLeft.value / 60)}:${String(secondsLeft.value % 60).padStart(2, '0')}`,
+)
+
+// --- Navigation -------------------------------------------------------------------------------
+
+const navigation = computed(() => [
+  { label: 'Hem', icon: '⌂' },
+  { label: 'Materiel', icon: '◇' },
+  { label: 'Leverans', icon: '⌾' },
+  ...(isAdmin.value ? [{ label: 'Hantera konton', icon: '♧' }] : []),
+  { label: 'Rapporter', icon: '▥' },
+  { label: 'Inställningar', icon: '⚙' },
+])
+
+const selectPage = (page: string) => {
+  active.value = page
+  showReportForm.value = false
+  openDamageOnMount.value = false
+}
+
+const reportDamagedItem = () => {
+  openDamageOnMount.value = true
+  active.value = 'Materiel'
+  showReportForm.value = false
+}
+
+// --- Header clock and account menu ------------------------------------------------------------
+
+const timeFormat = new Intl.DateTimeFormat('sv-SE', { timeStyle: 'medium' })
+const currentTime = ref(timeFormat.format())
+const showAccountMenu = ref(false)
+const accountMenuContainer = ref<HTMLElement | null>(null)
+
+const closeAccountMenuOutside = (event: PointerEvent) => {
+  if (!accountMenuContainer.value?.contains(event.target as Node)) showAccountMenu.value = false
+}
+const closeAccountMenuOnEscape = (event: KeyboardEvent) => {
+  if (event.key === 'Escape') showAccountMenu.value = false
+}
+
+let clockInterval: ReturnType<typeof setInterval> | undefined
+onMounted(() => {
+  clockInterval = setInterval(() => {
+    currentTime.value = timeFormat.format()
+  }, 1000)
+  document.addEventListener('pointerdown', closeAccountMenuOutside)
+  document.addEventListener('keydown', closeAccountMenuOnEscape)
+})
+onUnmounted(() => {
+  clearInterval(clockInterval)
+  document.removeEventListener('pointerdown', closeAccountMenuOutside)
+  document.removeEventListener('keydown', closeAccountMenuOnEscape)
+})
 </script>
+
 <template>
-<LandingView v-if="showLanding" @login="handleLogin" />
-<div v-else class="app">
+  <LandingView v-if="showLanding" :notice="logoutNotice" @login="handleLogin" />
+  <div v-else class="app">
     <aside>
       <div class="brand"><b>⬡</b><strong>Smart lagring</strong></div>
-      <div class="menu"><small>MENY</small><button v-for="navigationItem in nav" :key="navigationItem" :class="{ on: active === navigationItem }"
-          @click="active = navigationItem; showReportForm = false"><i>{{ ['⌂', '◇', '⌾', '♧', '▥', '⚙'][nav.indexOf(navigationItem)] }}</i>{{ navigationItem }}<em
-            v-if="navigationItem === 'Materiel'">1,284</em></button></div>
-      <div class="user"><span>{{ currentAccount?.name.slice(0, 2).toUpperCase() }}</span><b>{{ currentAccount?.name }}<small>{{ currentAccount?.role }}</small></b>›</div>
+      <div class="menu">
+        <small>MENY</small
+        ><button
+          v-for="item in navigation"
+          :key="item.label"
+          :class="{ on: active === item.label }"
+          @click="selectPage(item.label)"
+        >
+          <i>{{ item.icon }}</i
+          >{{ item.label }}<em v-if="item.label === 'Materiel'">1,284</em>
+        </button>
+      </div>
+      <div ref="accountMenuContainer" class="user-area">
+        <button
+          class="user"
+          type="button"
+          aria-haspopup="menu"
+          :aria-expanded="showAccountMenu"
+          aria-controls="account-menu"
+          @click="showAccountMenu = !showAccountMenu"
+        >
+          <span>{{ accountInitials }}</span
+          ><b
+            >{{ currentAccount?.name }}<small>{{ currentAccount?.role }}</small></b
+          ><span class="user-chevron" aria-hidden="true">›</span>
+        </button>
+        <div v-if="showAccountMenu" id="account-menu" class="user-menu" role="menu">
+          <button type="button" role="menuitem" @click="logout">Logga ut</button>
+        </div>
+      </div>
     </aside>
     <main>
-      <header><span class="crumb">Smart lagring　›　<strong>Översikt</strong></span>
-        <div>◷　10:57:17　　♧　 <span class="avatar">AD</span>　<b>Admin⌄</b></div>
+      <header>
+        <span class="crumb">Smart lagring　›　<strong>Översikt</strong></span>
+        <div>
+          ◷　{{ currentTime }}　　♧　 <span class="avatar">{{ accountInitials }}</span
+          >　<b>{{ currentAccount?.role }}⌄</b>
+        </div>
       </header>
       <CreateReportView v-if="showReportForm && isAdmin" @back="showReportForm = false" />
       <DeliveryView v-else-if="active === 'Leverans'" :is-admin="isAdmin" />
-      <MaterialView v-else-if="active === 'Materiel'" :is-admin="isAdmin" />
+      <MaterialView
+        v-else-if="active === 'Materiel'"
+        :is-admin="isAdmin"
+        :open-damage-on-mount="openDamageOnMount"
+      />
       <AccountView v-else-if="active === 'Hantera konton' && isAdmin" :is-admin="isAdmin" />
-      <ReportsView v-else-if="active === 'Rapporter'" :is-admin="isAdmin" @create-report="showReportForm = true" />
+      <ReportsView
+        v-else-if="active === 'Rapporter'"
+        :is-admin="isAdmin"
+        @create-report="showReportForm = true"
+      />
 
-
-      <section v-else>
-        <div class="intro">
-          <div>
-            <h1>Översikt</h1>
-            <p>Välkommen tillbaka, Admin. Här är dagens sammanfattning.</p>
-          </div><span>●　Alla system fungerar</span>
+      <OverviewView
+        v-else
+        :account-name="currentAccount?.name || ''"
+        :is-admin="isAdmin"
+        @create-report="showReportForm = true"
+        @report-damaged-item="reportDamagedItem"
+      />
+    </main>
+    <button class="help">?</button>
+    <div v-if="showWarning" class="modal-backdrop idle-modal">
+      <div
+        class="material-modal"
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="idle-modal-title"
+      >
+        <div class="modal-icon">◷</div>
+        <h2 id="idle-modal-title">Är du kvar?</h2>
+        <p>
+          Du har inte varit aktiv på sidan och loggas snart ut. Du loggas ut om
+          <strong>{{ countdown }}</strong
+          >.
+        </p>
+        <div class="modal-actions">
+          <button
+            type="button"
+            :ref="(el) => (el as HTMLElement | null)?.focus()"
+            @click="dismissWarning"
+          >
+            OK
+          </button>
         </div>
-        <div class="stats">
-          <article
-            v-for="statistic in overviewStatistics"
-            :key="statistic.label"><small>{{ statistic.label }}</small><b>{{ statistic.value }}</b> <span>{{ statistic.unit }}</span><em>{{ statistic.change }}</em></article>
-        </div>
-        <div class="grid">
-          <div>
-            <article class="card activity">
-              <div class="title"><b>Senaste aktivitet</b><a>Visa alla ↗</a></div>
-              <div class="row" v-for="activity in activities" :key="activity.title"><i :class="activity.color">{{ activity.icon }}</i>
-                <div><b>{{ activity.title }}</b><small>{{ activity.description }}</small></div><time>{{ activity.time }}</time>
-              </div>
-            </article>
-            <article class="card overview">
-              <div class="title">
-                <div><b>Lageröversikt</b><small>Aktuell fördelning mellan dina lager.</small></div><a>Visa rapport ›</a>
-              </div>
-              <div class="dist"><i /><i /><i /></div>
-              <p>● Lager A　43%　　　　　　　　　<span>● Lager B　31%　　　　　　　　　● Lager C　26%</span></p>
-            </article>
-          </div>
-          <div class="right">
-            <article class="quick"><b>Snabbåtgärder</b><button v-if="isAdmin" @click="showReportForm = true">＋　Skapa rapport</button></article>
-            <article class="card capacity"><b>Lagerkapacitet</b><small>Totalt</small>
-              <div v-for="capacity in warehouseCapacities" :key="capacity.name">{{ capacity.name }} <span>{{ capacity.percentage }}</span><i><b :class="capacity.color" :style="{ width: capacity.percentage }" /></i></div>
-              <a>Se
-                full rapport　›</a>
-            </article>
-          </div>
-        </div>
-      </section>
-    </main><button class="help">?</button>
+      </div>
+    </div>
   </div>
 </template>
