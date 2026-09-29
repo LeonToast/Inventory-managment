@@ -1,58 +1,71 @@
-from typing import Any, cast
+from datetime import datetime, timedelta, timezone
+from typing import Any
 
-from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException
 
-from ..database import connect_database
+from ..database import members_collection, parse_object_id
 from ..models import RoleUpdate
 from ..security import require_admin
 
-router = APIRouter(tags=["members"])
+router = APIRouter(prefix="/members", tags=["members"])
+
+INVALID_ID = "Ogiltigt medlems-ID"
+# The browser sends a heartbeat every 60 seconds; allow for a missed one before showing offline.
+ONLINE_WINDOW = timedelta(seconds=150)
 
 
-@router.get("/members")
-async def list_members() -> list[dict[str, str]]:
-    client, _ = connect_database()
-    try:
-        members = client["inventory-manager"]["Medlem"].find({}, {"name": 1, "email": 1, "role": 1}).sort("created_at", -1)
-        return [
-            {"id": str(member["_id"]), "name": member.get("name", ""),
-             "email": member.get("email", ""), "role": member.get("role", "Medlem")}
-            for member in members
-        ]
-    finally:
-        client.close()
+def as_utc(value: datetime | None) -> datetime | None:
+    # MongoDB returns naive UTC datetimes; mark them as UTC so browsers convert to local time correctly.
+    if value is None:
+        return None
+    return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
 
 
-@router.delete("/members/{member_id}")
-async def delete_member(member_id: str, _: dict[str, Any] = Depends(require_admin)) -> dict[str, str]:
-    client, _ = connect_database()
-    try:
-        try:
-            object_id = ObjectId(member_id)
-        except Exception as error:
-            raise HTTPException(status_code=400, detail="Ogiltigt medlems-ID") from error
-        result = cast(Any, client["inventory-manager"]["Medlem"]).delete_one({"_id": object_id})
-        if result.deleted_count == 0:
-            raise HTTPException(status_code=404, detail="Medlem hittades inte")
-        return {"status": "deleted"}
-    finally:
-        client.close()
+def iso_utc(value: datetime | None) -> str | None:
+    value = as_utc(value)
+    return value.isoformat() if value else None
 
 
-@router.patch("/members/{member_id}/role")
-async def update_member_role(member_id: str, update: RoleUpdate, _: dict[str, Any] = Depends(require_admin)) -> dict[str, str]:
-    client, _ = connect_database()
-    try:
-        try:
-            object_id = ObjectId(member_id)
-        except Exception as error:
-            raise HTTPException(status_code=400, detail="Ogiltigt medlems-ID") from error
-        result = cast(Any, client["inventory-manager"]["Medlem"]).update_one(
-            {"_id": object_id}, {"$set": {"role": update.role}}
-        )
-        if result.matched_count == 0:
-            raise HTTPException(status_code=404, detail="Medlem hittades inte")
-        return {"status": "updated", "role": update.role}
-    finally:
-        client.close()
+def is_online(member: dict[str, Any], now: datetime) -> bool:
+    """Online = logged in (no logout since the last login) and seen within the heartbeat window."""
+    login = as_utc(member.get("last_login_at"))
+    logout = as_utc(member.get("last_logout_at"))
+    seen = as_utc(member.get("last_seen_at"))
+    if not login or not seen:
+        return False
+    if logout and logout >= login:
+        return False
+    return now - seen <= ONLINE_WINDOW
+
+
+@router.get("")
+def list_members() -> list[dict[str, Any]]:
+    fields = {"name": 1, "email": 1, "role": 1, "last_login_at": 1, "last_logout_at": 1, "last_seen_at": 1}
+    members = members_collection().find({}, fields).sort("created_at", -1)
+    now = datetime.now(timezone.utc)
+    return [
+        {"id": str(member["_id"]), "name": member.get("name", ""),
+         "email": member.get("email", ""), "role": member.get("role", "Medlem"),
+         "last_login_at": iso_utc(member.get("last_login_at")),
+         "last_logout_at": iso_utc(member.get("last_logout_at")),
+         "online": is_online(member, now)}
+        for member in members
+    ]
+
+
+@router.delete("/{member_id}", dependencies=[Depends(require_admin)])
+def delete_member(member_id: str) -> dict[str, str]:
+    result = members_collection().delete_one({"_id": parse_object_id(member_id, INVALID_ID)})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Medlem hittades inte")
+    return {"status": "deleted"}
+
+
+@router.patch("/{member_id}/role", dependencies=[Depends(require_admin)])
+def update_member_role(member_id: str, update: RoleUpdate) -> dict[str, str]:
+    result = members_collection().update_one(
+        {"_id": parse_object_id(member_id, INVALID_ID)}, {"$set": {"role": update.role}}
+    )
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Medlem hittades inte")
+    return {"status": "updated", "role": update.role}

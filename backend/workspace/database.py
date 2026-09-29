@@ -1,6 +1,9 @@
 import os
+from functools import lru_cache
 from typing import Any
 
+from bson import ObjectId
+from bson.errors import InvalidId
 from fastapi import HTTPException
 
 try:
@@ -9,7 +12,9 @@ except ImportError:
     MongoClient = None
 
 
-def connect_database() -> tuple[Any, Any]:
+@lru_cache(maxsize=1)
+def get_client() -> Any:
+    """Return one shared, pooled MongoClient. Failures are not cached, so the next request retries."""
     connection_string = os.getenv("MONGODB_URI")
     if not connection_string or MongoClient is None:
         raise HTTPException(status_code=503, detail="MongoDB is not configured")
@@ -19,4 +24,26 @@ def connect_database() -> tuple[Any, Any]:
     except Exception as error:
         client.close()
         raise HTTPException(status_code=503, detail="Could not connect to MongoDB") from error
-    return client, client["inventory-manager"]["register-validering"]
+    return client
+
+
+def applications_collection() -> Any:
+    return get_client()["inventory-manager"]["register-validering"]
+
+
+def members_collection() -> Any:
+    return get_client()["inventory-manager"]["Medlem"]
+
+
+@lru_cache(maxsize=1)
+def reports_collection() -> Any:
+    reports = get_client()["components"]["rapport"]
+    reports.create_index("serial_number", unique=True, partialFilterExpression={"kind": "damage"})
+    return reports
+
+
+def parse_object_id(value: str, detail: str) -> ObjectId:
+    try:
+        return ObjectId(value)
+    except (InvalidId, TypeError) as error:
+        raise HTTPException(status_code=400, detail=detail) from error
