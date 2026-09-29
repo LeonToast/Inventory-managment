@@ -39,3 +39,10 @@ __screenshots__/
 *.timestamp-*-*.mjs
 
 .env
+# Python
+__pycache__/
+*.py[cod]
+
+# Vite dependency cache
+.vite/
+.jwt_secret
