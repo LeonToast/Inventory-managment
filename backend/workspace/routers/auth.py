@@ -17,7 +17,7 @@ INVALID_LOGIN = "Fel e-postadress eller lösenord."
 
 
 def _is_dev_admin(credentials: LoginCredentials) -> bool:
-    """Optional local admin login, enabled only when DEV_ADMIN_EMAIL and DEV_ADMIN_PASSWORD are set."""
+    """Optional local admin login, only enabled when DEV_ADMIN_EMAIL/DEV_ADMIN_PASSWORD are set."""
     email, password = os.getenv("DEV_ADMIN_EMAIL"), os.getenv("DEV_ADMIN_PASSWORD")
     if not email or not password:
         return False
@@ -59,7 +59,9 @@ def login(credentials: LoginCredentials) -> dict[str, str]:
     if not valid_password:
         raise HTTPException(status_code=401, detail=INVALID_LOGIN)
     now = datetime.now(timezone.utc)
-    members.update_one({"_id": member["_id"]}, {"$set": {"last_login_at": now, "last_seen_at": now}})
+    members.update_one(
+        {"_id": member["_id"]}, {"$set": {"last_login_at": now, "last_seen_at": now}}
+    )
     return _session(member["name"], member["email"], member.get("role", "Medlem"))
 
 

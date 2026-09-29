@@ -7,6 +7,7 @@ import {
   loadDamageReports,
   reportDamage,
 } from '../damageReports'
+import { materials } from '../data/materials'
 const props = defineProps<{ isAdmin: boolean; openDamageOnMount?: boolean }>()
 const showMaterialModal = ref(false)
 const showDamageModal = ref(false)
@@ -15,53 +16,6 @@ const selectedMaterialId = ref('')
 const serialNumber = ref('')
 const reportError = ref('')
 const submittingReport = ref(false)
-
-const materials = [
-  {
-    name: 'Kabeltrumma 25m',
-    id: 'MAT-1024',
-    tag: 'Elektronik',
-    qty: '12',
-    unit: 'st',
-    a: 'Lager A · Sektion 3',
-    b: 'Lager B · Sektion 2',
-    av: '8 st',
-    bv: '4 st',
-  },
-  {
-    name: 'Skyddshandskar',
-    id: 'MAT-1180',
-    tag: 'Förbrukning',
-    qty: '248',
-    unit: 'par',
-    a: 'Lager B · Sektion 1',
-    b: 'Lager C · Sektion 2',
-    av: '180 par',
-    bv: '68 par',
-  },
-  {
-    name: 'Pallställ 1200 kg',
-    id: 'MAT-2042',
-    tag: 'Utrustning',
-    qty: '6',
-    unit: 'st',
-    a: 'Lager A · Sektion 5',
-    b: '',
-    av: '6 st',
-    bv: '',
-  },
-  {
-    name: 'Fraktsedlar',
-    id: 'MAT-2371',
-    tag: 'Förbrukning',
-    qty: '820',
-    unit: 'st',
-    a: 'Lager C · Sektion 2',
-    b: 'Lager A · Sektion 2',
-    av: '500 st',
-    bv: '320 st',
-  },
-]
 
 const serialsByMaterial = computed(() => {
   const serials = new Map<string, string[]>()

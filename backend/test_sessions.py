@@ -9,15 +9,20 @@ from backend.workspace.main import app
 from backend.workspace.security import issue_token, password_hash
 
 
+AUTH_MEMBERS = "backend.workspace.routers.auth.members_collection"
+MEMBERS_MEMBERS = "backend.workspace.routers.members.members_collection"
+
+
 class FakeMembers:
     def __init__(self, *documents):
         self.documents = list(documents)
 
     def _matches(self, document, query):
-        return all(document.get(key) == value for key, value in query.items() if not isinstance(value, dict))
+        plain = {key: value for key, value in query.items() if not isinstance(value, dict)}
+        return all(document.get(key) == value for key, value in plain.items())
 
     def find_one(self, query, _projection=None):
-        # The login query uses a case-insensitive regex on email; the fake matches on the pattern's text.
+        # The login query matches email with a case-insensitive regex; the fake compares the text.
         if isinstance(query.get("email"), dict):
             pattern = query["email"]["$regex"].strip("^$").replace("\\", "")
             return next((d for d in self.documents if d["email"].lower() == pattern.lower()), None)
@@ -45,15 +50,16 @@ class SessionTimestampTests(unittest.TestCase):
 
     def test_login_and_logout_are_recorded_and_listed(self):
         with (
-            patch("backend.workspace.routers.auth.members_collection", return_value=self.members),
-            patch("backend.workspace.routers.members.members_collection", return_value=self.members),
+            patch(AUTH_MEMBERS, return_value=self.members),
+            patch(MEMBERS_MEMBERS, return_value=self.members),
             TestClient(app) as client,
         ):
             listed = client.get("/members").json()[0]
             self.assertIsNone(listed["last_login_at"])
             self.assertIsNone(listed["last_logout_at"])
 
-            login = client.post("/login", json={"email": "mia@example.com", "password": "hemligt123"})
+            credentials = {"email": "mia@example.com", "password": "hemligt123"}
+            login = client.post("/login", json=credentials)
             self.assertEqual(login.status_code, 200)
             self.assertIsInstance(self.member["last_login_at"], datetime)
 
@@ -67,15 +73,15 @@ class SessionTimestampTests(unittest.TestCase):
 
     def test_naive_mongo_datetimes_are_returned_as_utc(self):
         self.member["last_login_at"] = datetime(2026, 9, 29, 9, 58)
-        with patch("backend.workspace.routers.members.members_collection", return_value=self.members):
+        with patch(MEMBERS_MEMBERS, return_value=self.members):
             with TestClient(app) as client:
                 listed = client.get("/members").json()[0]
                 self.assertEqual(listed["last_login_at"], "2026-09-29T09:58:00+00:00")
 
     def test_online_status_follows_login_heartbeat_and_logout(self):
         with (
-            patch("backend.workspace.routers.auth.members_collection", return_value=self.members),
-            patch("backend.workspace.routers.members.members_collection", return_value=self.members),
+            patch(AUTH_MEMBERS, return_value=self.members),
+            patch(MEMBERS_MEMBERS, return_value=self.members),
             TestClient(app) as client,
         ):
             self.assertFalse(client.get("/members").json()[0]["online"])
@@ -98,7 +104,7 @@ class SessionTimestampTests(unittest.TestCase):
 
     def test_dev_admin_login_only_works_when_configured(self):
         credentials = {"email": "dev@example.com", "password": "dev-password"}
-        with patch("backend.workspace.routers.auth.members_collection", return_value=FakeMembers()):
+        with patch(AUTH_MEMBERS, return_value=FakeMembers()):
             with TestClient(app) as client:
                 with patch.dict(os.environ, {}, clear=False):
                     os.environ.pop("DEV_ADMIN_EMAIL", None)
@@ -106,12 +112,13 @@ class SessionTimestampTests(unittest.TestCase):
                     self.assertEqual(client.post("/login", json=credentials).status_code, 401)
                 env = {"DEV_ADMIN_EMAIL": "dev@example.com", "DEV_ADMIN_PASSWORD": "dev-password"}
                 with patch.dict(os.environ, env):
-                    self.assertEqual(client.post("/login", json=credentials).json()["role"], "Admin")
+                    logged_in = client.post("/login", json=credentials)
+                    self.assertEqual(logged_in.json()["role"], "Admin")
                     wrong = {**credentials, "password": "nope"}
                     self.assertEqual(client.post("/login", json=wrong).status_code, 401)
 
     def test_dev_admin_logout_does_not_fail(self):
-        with patch("backend.workspace.routers.auth.members_collection", return_value=FakeMembers()):
+        with patch(AUTH_MEMBERS, return_value=FakeMembers()):
             with TestClient(app) as client:
                 headers = {"Authorization": f"Bearer {issue_token('dev@example.com', 'Admin')}"}
                 self.assertEqual(client.post("/logout", headers=headers).status_code, 200)

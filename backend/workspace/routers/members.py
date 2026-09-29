@@ -15,7 +15,8 @@ ONLINE_WINDOW = timedelta(seconds=150)
 
 
 def as_utc(value: datetime | None) -> datetime | None:
-    # MongoDB returns naive UTC datetimes; mark them as UTC so browsers convert to local time correctly.
+    # MongoDB returns naive UTC datetimes; mark them as UTC so browsers convert them to local
+    # time correctly.
     if value is None:
         return None
     return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
@@ -40,7 +41,10 @@ def is_online(member: dict[str, Any], now: datetime) -> bool:
 
 @router.get("")
 def list_members() -> list[dict[str, Any]]:
-    fields = {"name": 1, "email": 1, "role": 1, "last_login_at": 1, "last_logout_at": 1, "last_seen_at": 1}
+    fields = {
+        "name": 1, "email": 1, "role": 1,
+        "last_login_at": 1, "last_logout_at": 1, "last_seen_at": 1,
+    }
     members = members_collection().find({}, fields).sort("created_at", -1)
     now = datetime.now(timezone.utc)
     return [

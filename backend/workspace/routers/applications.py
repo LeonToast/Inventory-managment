@@ -52,7 +52,8 @@ def validate_account_application(application_id: str) -> dict[str, str]:
         })
     except Exception:
         applications_collection().update_one(
-            {"_id": application["_id"]}, {"$set": {"status": "pending"}, "$unset": {"approved_role": ""}}
+            {"_id": application["_id"]},
+            {"$set": {"status": "pending"}, "$unset": {"approved_role": ""}},
         )
         raise
     return {"status": "validated", "role": "Medlem"}

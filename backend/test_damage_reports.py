@@ -30,10 +30,13 @@ class DamageReportApiTests(unittest.TestCase):
     def test_member_and_admin_can_report_without_double_counting(self):
         reports = FakeReports()
 
-        with patch("backend.workspace.routers.damage_reports.reports_collection", return_value=reports):
+        target = "backend.workspace.routers.damage_reports.reports_collection"
+        with patch(target, return_value=reports):
             with TestClient(app) as client:
-                member_headers = {"Authorization": f"Bearer {issue_token('member@example.com', 'Medlem')}"}
-                admin_headers = {"Authorization": f"Bearer {issue_token('admin@example.com', 'Admin')}"}
+                member_token = issue_token("member@example.com", "Medlem")
+                admin_token = issue_token("admin@example.com", "Admin")
+                member_headers = {"Authorization": f"Bearer {member_token}"}
+                admin_headers = {"Authorization": f"Bearer {admin_token}"}
                 payload = {"material_id": "MAT-1024", "serial_number": "abc-123"}
 
                 self.assertEqual(client.post("/damage-reports", json=payload).status_code, 401)

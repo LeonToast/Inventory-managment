@@ -14,7 +14,7 @@ except ImportError:
 
 @lru_cache(maxsize=1)
 def get_client() -> Any:
-    """Return one shared, pooled MongoClient. Failures are not cached, so the next request retries."""
+    """Return the shared, pooled MongoClient. A failed connect is not cached, so it retries."""
     connection_string = os.getenv("MONGODB_URI")
     if not connection_string or MongoClient is None:
         raise HTTPException(status_code=503, detail="MongoDB is not configured")

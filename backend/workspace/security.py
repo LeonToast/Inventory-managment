@@ -16,7 +16,7 @@ SECRET_FILE = Path(__file__).resolve().parent.parent / ".jwt_secret"
 
 
 def _load_secret() -> bytes:
-    """Use JWT_SECRET if set, else a key file created once and reused, so restarts keep sessions valid."""
+    """Use JWT_SECRET if set, else a key file created once, so restarts keep sessions valid."""
     if configured := os.getenv("JWT_SECRET"):
         return configured.encode()
     try:

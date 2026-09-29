@@ -54,6 +54,8 @@ def create_damage_report(
     try:
         result = reports_collection().insert_one(document)
     except DuplicateKeyError as error:
-        raise HTTPException(status_code=409, detail="Serienumret är redan rapporterat som skadat") from error
+        raise HTTPException(
+            status_code=409, detail="Serienumret är redan rapporterat som skadat"
+        ) from error
     document["_id"] = result.inserted_id
     return report_response(document)
