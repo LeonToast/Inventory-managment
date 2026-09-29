@@ -10,10 +10,10 @@ cd backend
 pip install -r requirements.txt
 cp .env.example .env        # then fill in MONGODB_URI (and optionally the other values)
 cd ..
-uvicorn backend.main:app --port 8001
+uvicorn backend.main:app --port 8001   # 8002 works too
 ```
 
-Tests: `python -m unittest backend.test_damage_reports backend.test_sessions`
+Tests: `python -m unittest backend.test_damage_reports backend.test_materials backend.test_sessions`
 
 ## Frontend
 
@@ -23,5 +23,6 @@ npm install
 npm run dev
 ```
 
-The frontend talks to `http://127.0.0.1:8001` by default; override it with `VITE_API_BASE_URL`.
+The frontend looks for the backend on `http://127.0.0.1:8001` and falls back to `:8002`; set
+`VITE_API_BASE_URL` to pin one address.
 Before committing: `npm run type-check`, `npm run lint`, `npm run format`.

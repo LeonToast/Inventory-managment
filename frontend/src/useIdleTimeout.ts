@@ -1,7 +1,7 @@
 import { computed, onUnmounted, ref, watch } from 'vue'
 
-export const WARN_AFTER_MS = 15 * 60 * 1000
-export const LOGOUT_AFTER_MS = 20 * 60 * 1000
+const WARN_AFTER_MS = 15 * 60 * 1000
+const LOGOUT_AFTER_MS = 20 * 60 * 1000
 
 const ACTIVITY_KEY = 'smart-lagring-last-activity'
 const ACTIVITY_EVENTS = ['pointerdown', 'keydown', 'scroll', 'touchstart'] as const

@@ -2,47 +2,42 @@ import unittest
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
-from pymongo.errors import DuplicateKeyError
 
+from backend.fakes import FakeActivity, FakeMaterials, FakeReports
 from backend.workspace.main import app
 from backend.workspace.security import issue_token
 
-
-class FakeReports(list):
-    def create_index(self, *_args, **_kwargs):
-        return "serial_number"
-
-    def find(self, query, _projection=None):
-        return FakeReports(report for report in self if report["kind"] == query["kind"])
-
-    def sort(self, key, direction):
-        return sorted(self, key=lambda report: report[key], reverse=direction == -1)
-
-    def insert_one(self, document):
-        if any(report["serial_number"] == document["serial_number"] for report in self):
-            raise DuplicateKeyError("duplicate serial number")
-        document = {**document, "_id": str(len(self) + 1)}
-        self.append(document)
-        return type("InsertResult", (), {"inserted_id": document["_id"]})()
+ACTIVITY = "backend.workspace.routers.activity.activity_collection"
 
 
 class DamageReportApiTests(unittest.TestCase):
     def test_member_and_admin_can_report_without_double_counting(self):
         reports = FakeReports()
+        material_id = "a" * 24
+        materials = FakeMaterials([{"_id": material_id, "name": "Kabeltrumma 25m"}])
 
-        target = "backend.workspace.routers.damage_reports.reports_collection"
-        with patch(target, return_value=reports):
+        module = "backend.workspace.routers.damage_reports"
+        with (
+            patch(f"{module}.reports_collection", return_value=reports),
+            patch(f"{module}.materials_collection", return_value=materials),
+            patch(ACTIVITY, return_value=FakeActivity()),
+        ):
             with TestClient(app) as client:
                 member_token = issue_token("member@example.com", "Medlem")
                 admin_token = issue_token("admin@example.com", "Admin")
                 member_headers = {"Authorization": f"Bearer {member_token}"}
                 admin_headers = {"Authorization": f"Bearer {admin_token}"}
-                payload = {"material_id": "MAT-1024", "serial_number": "abc-123"}
+                payload = {"material_id": material_id, "serial_number": "abc-123"}
 
                 self.assertEqual(client.post("/damage-reports", json=payload).status_code, 401)
                 created = client.post("/damage-reports", headers=member_headers, json=payload)
                 self.assertEqual(created.status_code, 201)
                 self.assertEqual(created.json()["serial_number"], "ABC-123")
+
+                for unknown_id in ("b" * 24, "MAT-9999"):
+                    unknown = {"material_id": unknown_id, "serial_number": "XYZ-1"}
+                    rejected = client.post("/damage-reports", headers=member_headers, json=unknown)
+                    self.assertEqual(rejected.status_code, 422)
 
                 duplicate = client.post("/damage-reports", headers=admin_headers, json=payload)
                 self.assertEqual(duplicate.status_code, 409)
@@ -51,6 +46,7 @@ class DamageReportApiTests(unittest.TestCase):
                 listed = client.get("/damage-reports", headers=admin_headers)
                 self.assertEqual(listed.status_code, 200)
                 self.assertEqual(len(listed.json()), 1)
+                self.assertEqual(listed.json()[0]["material_id"], material_id)
 
 
 if __name__ == "__main__":

@@ -1,20 +1,20 @@
 from datetime import datetime, timezone
-from typing import Any, Literal
+from typing import Any
 
+from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from pymongo.errors import DuplicateKeyError
 
-from ..database import reports_collection
+from ..database import materials_collection, reports_collection
 from ..security import require_user
+from .activity import record_activity
 
 router = APIRouter(prefix="/damage-reports", tags=["damage reports"])
 
-MaterialId = Literal["MAT-1024", "MAT-1180", "MAT-2042", "MAT-2371"]
-
 
 class DamageReportInput(BaseModel):
-    material_id: MaterialId
+    material_id: str = Field(min_length=1, max_length=50)  # the material's id
     serial_number: str = Field(min_length=1, max_length=100)
 
 
@@ -46,9 +46,18 @@ def create_damage_report(
     if not serial_number:
         raise HTTPException(status_code=422, detail="Ange ett serienummer")
 
+    material_id = report.material_id.strip()
+    material = (
+        materials_collection().find_one({"_id": ObjectId(material_id)}, {"name": 1})
+        if ObjectId.is_valid(material_id)
+        else None
+    )
+    if not material:
+        raise HTTPException(status_code=422, detail="Okänt material")
+
     document = {
         "kind": "damage",
-        "material_id": report.material_id,
+        "material_id": str(ObjectId(material_id)),
         "serial_number": serial_number,
         "reported_by": user["sub"],
         "reported_at": datetime.now(timezone.utc),
@@ -60,4 +69,5 @@ def create_damage_report(
             status_code=409, detail="Serienumret är redan rapporterat som skadat"
         ) from error
     document["_id"] = result.inserted_id
+    record_activity("damage", f"{material['name']} · {serial_number}", user["sub"])
     return report_response(document)

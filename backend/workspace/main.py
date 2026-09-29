@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from dotenv import load_dotenv
 from fastapi import FastAPI, Request
@@ -6,10 +7,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pymongo.errors import ConnectionFailure
 
-load_dotenv()
+# Load backend/.env by path, so it is found no matter where or how the server is started.
+load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 from .database import get_client
-from .routers import applications, auth, damage_reports, members
+from .routers import (
+    activity,
+    announcements,
+    applications,
+    auth,
+    damage_reports,
+    materials,
+    members,
+)
 
 
 @asynccontextmanager
@@ -22,7 +32,8 @@ async def lifespan(_: FastAPI):
 app = FastAPI(title="Smart Lagring API", version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    # Any port on this machine, so the frontend dev server can run wherever it is started.
+    allow_origin_regex=r"^http://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -48,3 +59,6 @@ app.include_router(auth.router)
 app.include_router(applications.router)
 app.include_router(members.router)
 app.include_router(damage_reports.router)
+app.include_router(materials.router)
+app.include_router(announcements.router)
+app.include_router(activity.router)

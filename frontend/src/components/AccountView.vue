@@ -1,14 +1,16 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, watch, type Ref } from 'vue'
-import { apiJson, apiRequest } from '../api'
+import { apiJson, apiRequest, errorText } from '../api'
+import { formatDate } from '../format'
 
 defineProps<{ isAdmin: boolean }>()
 
+type Role = 'Medlem' | 'Admin'
 type Member = {
   id: string
   name: string
   email: string
-  role: 'Medlem' | 'Admin'
+  role: Role
   last_login_at: string | null
   last_logout_at: string | null
   online: boolean
@@ -19,23 +21,15 @@ const activeTab = ref<'members' | 'applications'>('members')
 const members = ref<Member[]>([])
 const applications = ref<Application[]>([])
 const error = ref('')
-const formatDate = new Intl.DateTimeFormat('sv-SE', {
-  day: 'numeric',
-  month: 'short',
-  year: 'numeric',
-})
-const formatTime = new Intl.DateTimeFormat('sv-SE', { hour: '2-digit', minute: '2-digit' })
-const formatTimestamp = (value: string | null) => {
-  if (!value) return '—'
-  const date = new Date(value)
-  return `${formatDate.format(date).replace('.', '')}, ${formatTime.format(date)}`
-}
+const timeFormat = new Intl.DateTimeFormat('sv-SE', { hour: '2-digit', minute: '2-digit' })
+const formatTimestamp = (value: string | null) =>
+  value ? `${formatDate(value)}, ${timeFormat.format(new Date(value))}` : '—'
 const load = async <T,>(target: Ref<T[]>, path: string, errorMessage: string) => {
   try {
     target.value = await apiJson<T[]>(path, { authenticated: true, errorMessage })
     error.value = ''
   } catch (reason) {
-    error.value = reason instanceof Error ? reason.message : 'Kunde inte nå backend.'
+    error.value = errorText(reason, 'Kunde inte nå backend.')
   }
 }
 const loadMembers = () => load(members, '/members', 'Kunde inte hämta giltiga inloggningar.')
@@ -75,7 +69,7 @@ const deleteMember = async (member: Member) => {
   }
 }
 
-const updateRole = async (member: Member, role: 'Medlem' | 'Admin') => {
+const updateRole = async (member: Member, role: Role) => {
   const previousRole = member.role
   member.role = role
   try {
@@ -151,9 +145,7 @@ onUnmounted(() => clearInterval(statusInterval))
           class="role-select"
           :value="member.role"
           :aria-label="`Roll för ${member.name}`"
-          @change="
-            updateRole(member, ($event.target as HTMLSelectElement).value as 'Medlem' | 'Admin')
-          "
+          @change="updateRole(member, ($event.target as HTMLSelectElement).value as Role)"
         >
           <option value="Medlem">Medlem</option>
           <option value="Admin">Admin</option>

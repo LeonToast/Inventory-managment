@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { computed, defineAsyncComponent, ref, onMounted, onUnmounted } from 'vue'
+import { computed, defineAsyncComponent, ref, onMounted, onUnmounted, watch } from 'vue'
 import LandingView from './components/LandingView.vue'
 import OverviewView from './components/OverviewView.vue'
 import { ACCOUNT_STORAGE_KEY, apiRequest, storedAccount, type Account } from './api'
+import { clearActivity } from './activity'
+import { clearAnnouncements } from './announcements'
 import { clearDamageReports } from './damageReports'
+import { clearMaterials, loadMaterials, materials } from './materials'
 import { useHeartbeat } from './useHeartbeat'
 import { useIdleTimeout } from './useIdleTimeout'
 
@@ -14,7 +17,6 @@ const MaterialView = defineAsyncComponent(() => import('./components/MaterialVie
 const DeliveryView = defineAsyncComponent(() => import('./components/DeliveryView.vue'))
 const AccountView = defineAsyncComponent(() => import('./components/AccountView.vue'))
 const ReportsView = defineAsyncComponent(() => import('./components/ReportsView.vue'))
-const CreateReportView = defineAsyncComponent(() => import('./components/CreateReportView.vue'))
 
 // --- Account and page state -------------------------------------------------------------------
 
@@ -22,8 +24,8 @@ const currentAccount = ref<Account | null>(storedAccount())
 const showLanding = ref(!currentAccount.value)
 const logoutNotice = ref('')
 const active = ref('Hem')
-const showReportForm = ref(false)
 const openDamageOnMount = ref(false)
+const openNewReportOnMount = ref(false)
 
 const isAdmin = computed(() => currentAccount.value?.role === 'Admin')
 const accountInitials = computed(
@@ -43,12 +45,23 @@ const logout = () => {
     apiRequest('/logout', { method: 'POST', authenticated: true }).catch(() => {})
   localStorage.removeItem(ACCOUNT_STORAGE_KEY)
   clearDamageReports()
+  clearMaterials()
+  clearAnnouncements()
+  clearActivity()
   currentAccount.value = null
   showAccountMenu.value = false
-  showReportForm.value = false
   active.value = 'Hem'
   showLanding.value = true
 }
+
+// The Materiel badge in the menu needs the material list as soon as someone is logged in.
+watch(
+  () => currentAccount.value !== null,
+  (loggedIn) => {
+    if (loggedIn) loadMaterials()
+  },
+  { immediate: true },
+)
 
 // --- Session: inactivity warning, automatic logout and heartbeat ------------------------------
 
@@ -76,19 +89,22 @@ const navigation = computed(() => [
   { label: 'Leverans', icon: '⌾' },
   ...(isAdmin.value ? [{ label: 'Hantera konton', icon: '♧' }] : []),
   { label: 'Rapporter', icon: '▥' },
-  { label: 'Inställningar', icon: '⚙' },
 ])
 
 const selectPage = (page: string) => {
   active.value = page
-  showReportForm.value = false
   openDamageOnMount.value = false
+  openNewReportOnMount.value = false
 }
 
 const reportDamagedItem = () => {
   openDamageOnMount.value = true
   active.value = 'Materiel'
-  showReportForm.value = false
+}
+
+const startNewReport = () => {
+  openNewReportOnMount.value = true
+  active.value = 'Rapporter'
 }
 
 // --- Header clock and account menu ------------------------------------------------------------
@@ -134,7 +150,8 @@ onUnmounted(() => {
           @click="selectPage(item.label)"
         >
           <i>{{ item.icon }}</i
-          >{{ item.label }}<em v-if="item.label === 'Materiel'">1,284</em>
+          >{{ item.label
+          }}<em v-if="item.label === 'Materiel' && materials.length">{{ materials.length }}</em>
         </button>
       </div>
       <div ref="accountMenuContainer" class="user-area">
@@ -165,8 +182,7 @@ onUnmounted(() => {
           >　<b>{{ currentAccount?.role }}⌄</b>
         </div>
       </header>
-      <CreateReportView v-if="showReportForm && isAdmin" @back="showReportForm = false" />
-      <DeliveryView v-else-if="active === 'Leverans'" :is-admin="isAdmin" />
+      <DeliveryView v-if="active === 'Leverans'" :is-admin="isAdmin" />
       <MaterialView
         v-else-if="active === 'Materiel'"
         :is-admin="isAdmin"
@@ -176,14 +192,14 @@ onUnmounted(() => {
       <ReportsView
         v-else-if="active === 'Rapporter'"
         :is-admin="isAdmin"
-        @create-report="showReportForm = true"
+        :open-modal-on-mount="openNewReportOnMount"
       />
 
       <OverviewView
         v-else
         :account-name="currentAccount?.name || ''"
         :is-admin="isAdmin"
-        @create-report="showReportForm = true"
+        @create-report="startNewReport"
         @report-damaged-item="reportDamagedItem"
       />
     </main>

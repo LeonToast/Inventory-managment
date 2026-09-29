@@ -1,8 +1,13 @@
-﻿@import './base.css';
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  font-weight: normal;
+}
 
 #app {
   min-height: 100vh;
-  font-weight: normal;
 }
 
 a,
@@ -19,26 +24,20 @@ a,
   }
 }
 
-/* The app shell owns its own layout; the starter Vue centering rules break it. */
-
-/* Main.vue â€” dashboard shell and overview styles */
+/* Main.vue — dashboard shell and overview styles */
 
 body {
   min-width: 320px;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
+  min-height: 100vh;
   background: #f4f5f7;
   color: #111318;
   font:
     13px Inter,
     system-ui,
     sans-serif;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .app {
@@ -387,6 +386,17 @@ a {
   font-size: 10px;
 }
 
+.activity-empty {
+  padding: 26px 20px;
+  color: #9aa3b0;
+  font-size: 12px;
+  text-align: center;
+}
+
+.activity-empty.error {
+  color: #b7443f;
+}
+
 .overview {
   padding-bottom: 20px;
 }
@@ -604,7 +614,7 @@ a {
   }
 }
 
-/* MaterialView.vue â€” Materiel page styles */
+/* MaterialView.vue — Materiel page styles */
 
 .materials-page {
   padding: 34px 36px;
@@ -672,6 +682,25 @@ a {
   font-size: 12px;
 }
 
+.search:focus-within {
+  border-color: #4778df;
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  margin-left: 8px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font: inherit;
+  color: #526079;
+}
+
+.search input::placeholder {
+  color: #99a3b2;
+}
+
 .material-toolbar nav {
   display: flex;
   background: #f4f5f7;
@@ -685,9 +714,18 @@ a {
   font-weight: 400;
 }
 
-.material-toolbar nav b {
-  background: #fff;
+.material-toolbar nav button {
+  height: auto;
+  border: 0;
+  background: transparent;
   border-radius: 6px;
+  padding: 9px 14px;
+  font-weight: 400;
+  color: inherit;
+}
+
+.material-toolbar nav button[aria-pressed='true'] {
+  background: #fff;
   color: #44516a;
   box-shadow: 0 1px 3px #0001;
 }
@@ -833,7 +871,7 @@ a {
   font-size: 12px;
 }
 
-.damage-empty {
+.empty-message {
   padding: 28px;
   border: 1px solid #dfe2e6;
   border-radius: 10px;
@@ -849,7 +887,7 @@ a {
   overflow-wrap: anywhere;
 }
 
-/* DeliveryView.vue â€” Leverans page styles */
+/* DeliveryView.vue — Leverans page styles */
 
 .delivery-page {
   padding: 24px 36px;
@@ -1080,7 +1118,7 @@ a {
   color: #718096;
 }
 
-/* AccountView.vue â€” Konton page styles */
+/* AccountView.vue — Konton page styles */
 
 .account-page {
   padding: 34px 40px;
@@ -1107,94 +1145,6 @@ a {
 
 .account-intro > span {
   color: #8993a1;
-  font-size: 11px;
-}
-
-.account-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.account-stats article {
-  background: #fff;
-  border: 1px solid #dfe2e6;
-  border-radius: 10px;
-  padding: 17px 20px;
-}
-
-.account-stats small {
-  display: block;
-  color: #8894a5;
-  letter-spacing: 1.3px;
-  font-size: 9px;
-  margin-bottom: 14px;
-}
-
-.account-stats b {
-  font-size: 25px;
-}
-
-.account-stats span {
-  color: #89909d;
-  font-size: 10px;
-  margin-left: 6px;
-}
-
-.account-filter {
-  height: 82px;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: #fff;
-  border: 1px solid #dfe2e6;
-  border-radius: 10px;
-  margin-bottom: 16px;
-  color: #718096;
-  font-size: 11px;
-}
-
-.account-filter > div {
-  height: 40px;
-  border: 1px solid #dfe2e6;
-  border-radius: 7px;
-  display: flex;
-  align-items: center;
-  padding: 0 12px;
-  color: #99a3b2;
-  flex: 1;
-  font-size: 12px;
-}
-
-.account-filter nav {
-  display: flex;
-  background: #f4f5f7;
-  border-radius: 8px;
-  padding: 4px;
-  gap: 3px;
-}
-
-.account-filter nav > * {
-  padding: 9px 14px;
-}
-
-.account-filter nav b {
-  background: #fff;
-  border-radius: 6px;
-  color: #44516a;
-  box-shadow: 0 1px 3px #0001;
-}
-
-.account-filter button {
-  height: 40px;
-  border: 0;
-  background: #111216;
-  color: #fff;
-  border-radius: 7px;
-  padding: 0 16px;
-  font-weight: 700;
   font-size: 11px;
 }
 
@@ -1298,12 +1248,7 @@ a {
   font-weight: 600;
 }
 
-.teal {
-  background: #e8f6f5;
-  color: #4da4a0;
-}
-
-/* ReportsView.vue â€” Rapporter page styles */
+/* ReportsView.vue — Rapporter page styles */
 
 .reports-page {
   padding: 34px 40px;
@@ -1376,10 +1321,17 @@ a {
   font-size: 11px;
 }
 
-.reports-toolbar nav b {
-  background: #fff;
+.reports-toolbar nav button {
+  border: 0;
+  background: transparent;
   border-radius: 6px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.reports-toolbar nav button[aria-pressed='true'] {
+  background: #fff;
   color: #44516a;
+  font-weight: 700;
   box-shadow: 0 1px 3px #0001;
 }
 
@@ -1515,72 +1467,7 @@ a {
   padding: 3px 6px;
 }
 
-/* CreateReportView.vue â€” report creation styles */
-
-.create-report {
-  padding: 34px 40px;
-  max-width: 900px;
-}
-
-.back {
-  border: 0;
-  background: none;
-  color: #4778df;
-  padding: 0;
-  margin-bottom: 25px;
-  font-size: 11px;
-  cursor: pointer;
-}
-
-.form-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: end;
-  margin-bottom: 24px;
-}
-
-.form-heading h1 {
-  margin: 0 0 8px;
-  font-size: 28px;
-}
-
-.form-heading p {
-  margin: 0;
-  color: #97a0ae;
-  font-size: 12px;
-}
-
-.primary {
-  background: #111216;
-  color: #fff;
-  border: 0;
-  border-radius: 7px;
-  padding: 12px 18px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.form-card {
-  background: #fff;
-  border: 1px solid #dfe2e6;
-  border-radius: 10px;
-  padding: 24px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 22px;
-}
-
-.form-card label {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  color: #53627a;
-  font-size: 11px;
-}
-
-.form-card label:last-child {
-  grid-column: 1/-1;
-}
+/* Shared form controls */
 
 select,
 textarea {
@@ -1595,19 +1482,6 @@ textarea {
 textarea {
   min-height: 100px;
   resize: vertical;
-}
-
-.checks {
-  display: flex;
-  gap: 10px;
-}
-
-.checks span {
-  background: #edf3ff;
-  color: #4778df;
-  border-radius: 7px;
-  padding: 10px 12px;
-  font-size: 10px;
 }
 
 /* MaterialView.vue — add material modal */
@@ -1779,94 +1653,7 @@ textarea {
 
 /* AccountView.vue — create user modal */
 
-.account-modal {
-  position: relative;
-  width: 420px;
-  background: #fff;
-  border-radius: 16px;
-  padding: 24px;
-}
-
-.account-modal h2 {
-  text-align: center;
-  margin: 0;
-  font-size: 21px;
-}
-
-.account-modal > p {
-  text-align: center;
-  color: #9aa3b0;
-  font-size: 11px;
-  margin: 8px 0 26px;
-}
-
-.account-modal form {
-  display: grid;
-  gap: 16px;
-}
-
-.account-modal label {
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-  color: #536075;
-  font-size: 10px;
-}
-
-.account-modal input,
-.account-modal select {
-  height: 40px;
-  border: 1px solid #dfe2e6;
-  border-radius: 7px;
-  padding: 0 12px;
-  font: inherit;
-  color: #526079;
-}
-
-.input-icon {
-  height: 40px;
-  border: 1px solid #dfe2e6;
-  border-radius: 7px;
-  display: flex;
-  align-items: center;
-  padding-left: 12px;
-  color: #9aa3b0;
-}
-
-.input-icon input {
-  border: 0;
-  flex: 1;
-  outline: 0;
-}
-
-.account-submit {
-  height: 40px;
-  background: #111216;
-  color: #fff;
-  border: 0;
-  border-radius: 7px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.account-note {
-  display: block;
-  text-align: center;
-  color: #a1a9b5;
-  font-size: 9px;
-  margin-top: 17px;
-}
-
 /* Compact email input spacing */
-
-.account-modal .input-icon {
-  padding-left: 10px;
-}
-
-.account-modal .input-icon input {
-  height: 38px;
-  padding: 0 8px;
-}
 
 /* LandingView.vue — landing page */
 
@@ -2534,4 +2321,61 @@ button:disabled {
 
 .user-row strong.offline {
   color: #9aa3b0;
+}
+
+/* Edit and delete on material cards, announcement actions, textarea in modals */
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 13px;
+}
+
+.card-actions button,
+.announcement-delete {
+  border: 1px solid #dfe2e6;
+  background: #fff;
+  color: #526079;
+  border-radius: 7px;
+  padding: 6px 12px;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.card-actions button.danger,
+.announcement-delete {
+  border-color: #d8635d;
+  color: #d8635d;
+}
+
+.card-actions button:hover {
+  background: #f4f5f7;
+}
+
+.card-actions button.danger:hover,
+.announcement-delete:hover {
+  background: #fdf1f0;
+}
+
+.material-modal input[readonly] {
+  background: #f4f5f7;
+  color: #8a94a3;
+}
+
+.material-modal textarea {
+  border: 1px solid #dfe2e6;
+  border-radius: 7px;
+  padding: 10px 12px;
+  font: inherit;
+  color: #526079;
+  resize: vertical;
+  min-height: 110px;
+}
+
+.announcement-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }

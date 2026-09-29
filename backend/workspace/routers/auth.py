@@ -3,6 +3,7 @@ import hmac
 import os
 import re
 from datetime import datetime, timezone
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 
@@ -30,6 +31,26 @@ def _session(name: str, email: str, role: str) -> dict[str, str]:
     return {"name": name, "email": email, "role": role, "access_token": issue_token(email, role)}
 
 
+def _password_matches(members: Any, member: dict[str, Any], password: str) -> bool:
+    """Check a password against the stored hash. A legacy SHA-256 hash is upgraded to Argon2
+    once the password is correct."""
+    stored_hash = member.get("password_hash", "")
+    if stored_hash.startswith("$argon2"):
+        try:
+            return password_hash.verify(password, stored_hash)
+        except (ValueError, TypeError):
+            return False
+    if not LEGACY_SHA256.fullmatch(stored_hash):
+        return False
+    legacy_hash = hashlib.sha256(password.encode()).hexdigest()
+    if not hmac.compare_digest(legacy_hash, stored_hash.lower()):
+        return False
+    members.update_one(
+        {"_id": member["_id"]}, {"$set": {"password_hash": password_hash.hash(password)}}
+    )
+    return True
+
+
 @router.post("/login")
 def login(credentials: LoginCredentials) -> dict[str, str]:
     if _is_dev_admin(credentials):
@@ -39,25 +60,7 @@ def login(credentials: LoginCredentials) -> dict[str, str]:
         {"email": {"$regex": "^" + re.escape(credentials.email.strip()) + "$", "$options": "i"}},
         {"name": 1, "email": 1, "role": 1, "password_hash": 1},
     )
-    if not member:
-        raise HTTPException(status_code=401, detail=INVALID_LOGIN)
-    stored_hash = member.get("password_hash", "")
-    valid_password = False
-    if stored_hash.startswith("$argon2"):
-        try:
-            valid_password = password_hash.verify(credentials.password, stored_hash)
-        except (ValueError, TypeError):
-            pass
-    elif LEGACY_SHA256.fullmatch(stored_hash):
-        valid_password = hmac.compare_digest(
-            hashlib.sha256(credentials.password.encode()).hexdigest(), stored_hash.lower()
-        )
-        if valid_password:  # Upgrade legacy SHA-256 hashes to Argon2 on successful login.
-            members.update_one(
-                {"_id": member["_id"]},
-                {"$set": {"password_hash": password_hash.hash(credentials.password)}},
-            )
-    if not valid_password:
+    if not member or not _password_matches(members, member, credentials.password):
         raise HTTPException(status_code=401, detail=INVALID_LOGIN)
     now = datetime.now(timezone.utc)
     members.update_one(

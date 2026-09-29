@@ -1,4 +1,8 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8001'
+// The backend may run on either port. Setting VITE_API_BASE_URL pins a single address instead.
+const API_BASE_URLS: string[] = import.meta.env.VITE_API_BASE_URL
+  ? [import.meta.env.VITE_API_BASE_URL]
+  : ['http://127.0.0.1:8001', 'http://127.0.0.1:8002']
+let activeBaseUrl = API_BASE_URLS[0]
 export const ACCOUNT_STORAGE_KEY = 'smart-lagring-account'
 
 export type Account = {
@@ -30,6 +34,22 @@ export function storedAccount(): Account | null {
   }
 }
 
+// Tries the address that worked last, then the others, and only when nothing answers at all.
+async function fetchFromBackend(path: string, init: RequestInit): Promise<Response> {
+  const candidates = [activeBaseUrl, ...API_BASE_URLS.filter((url) => url !== activeBaseUrl)]
+  let unreachable: unknown
+  for (const baseUrl of candidates) {
+    try {
+      const response = await fetch(`${baseUrl}${path}`, init)
+      activeBaseUrl = baseUrl
+      return response
+    } catch (error) {
+      unreachable = error
+    }
+  }
+  throw unreachable
+}
+
 export async function apiRequest(path: string, options: ApiOptions = {}): Promise<Response> {
   const { authenticated, json, errorMessage, ...requestOptions } = options
   const headers = new Headers(requestOptions.headers)
@@ -40,7 +60,7 @@ export async function apiRequest(path: string, options: ApiOptions = {}): Promis
     if (token) headers.set('Authorization', `Bearer ${token}`)
   }
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetchFromBackend(path, {
     ...requestOptions,
     headers,
     ...(json !== undefined ? { body: JSON.stringify(json) } : {}),
@@ -48,7 +68,14 @@ export async function apiRequest(path: string, options: ApiOptions = {}): Promis
 
   if (!response.ok) {
     const result = await response.json().catch(() => null)
-    throw new Error(result?.detail || errorMessage || `Request failed (${response.status}).`)
+    // FastAPI sends a string for our own errors and a list of objects for validation errors.
+    const detail =
+      typeof result?.detail === 'string'
+        ? result.detail
+        : Array.isArray(result?.detail)
+          ? 'Kontrollera att alla fält är korrekt ifyllda.'
+          : ''
+    throw new Error(detail || errorMessage || `Request failed (${response.status}).`)
   }
 
   return response
@@ -56,4 +83,14 @@ export async function apiRequest(path: string, options: ApiOptions = {}): Promis
 
 export async function apiJson<T>(path: string, options?: ApiOptions): Promise<T> {
   return (await apiRequest(path, options)).json() as Promise<T>
+}
+
+export function errorText(reason: unknown, fallback: string) {
+  return reason instanceof Error ? reason.message : fallback
+}
+
+// Callers that arrive while a load is running share it instead of starting another request.
+export function shareInFlight(load: () => Promise<void>) {
+  let pending: Promise<void> | null = null
+  return () => (pending ??= load().finally(() => (pending = null)))
 }

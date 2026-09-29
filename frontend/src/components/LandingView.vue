@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue'
-import { ACCOUNT_STORAGE_KEY, apiJson, apiRequest, type Account } from '../api'
+import { ACCOUNT_STORAGE_KEY, apiJson, apiRequest, errorText, type Account } from '../api'
 const props = defineProps<{ notice?: string }>()
 const emit = defineEmits<{ login: [account: Account] }>()
 const showNotice = ref(Boolean(props.notice))
@@ -26,10 +26,8 @@ const submitLogin = async () => {
   } catch (error) {
     loginError.value =
       error instanceof TypeError
-        ? 'Kan inte nå backend. Kontrollera att Uvicorn körs på port 8001.'
-        : error instanceof Error
-          ? error.message
-          : 'Inloggningen misslyckades.'
+        ? 'Kan inte nå backend. Kontrollera att Uvicorn körs på port 8001 eller 8002.'
+        : errorText(error, 'Inloggningen misslyckades.')
   }
 }
 const signupForm = reactive({ name: '', email: '', password: '', confirmPassword: '' })
@@ -45,21 +43,20 @@ const canRegister = computed(
 const showSignupErrors = ref(false)
 const submitSignup = async () => {
   showSignupErrors.value = true
-  if (canRegister.value) {
-    try {
-      await apiRequest('/account-applications', {
-        method: 'POST',
-        json: {
-          name: signupForm.name.trim(),
-          email: signupForm.email.trim(),
-          password: signupForm.password,
-        },
-      })
-      showSignupForm.value = false
-      showPendingMessage.value = true
-    } catch {
-      // Keep the form open so the user can try again.
-    }
+  if (!canRegister.value) return
+  try {
+    await apiRequest('/account-applications', {
+      method: 'POST',
+      json: {
+        name: signupForm.name.trim(),
+        email: signupForm.email.trim(),
+        password: signupForm.password,
+      },
+    })
+    showSignupForm.value = false
+    showPendingMessage.value = true
+  } catch {
+    // Keep the form open so the user can try again.
   }
 }
 </script>

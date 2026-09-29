@@ -6,25 +6,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from ..database import members_collection, parse_object_id
 from ..models import RoleUpdate
 from ..security import require_admin
+from ..timestamps import as_utc, iso_utc
 
 router = APIRouter(prefix="/members", tags=["members"])
 
 INVALID_ID = "Ogiltigt medlems-ID"
 # The browser sends a heartbeat every 60 seconds; allow for a missed one before showing offline.
 ONLINE_WINDOW = timedelta(seconds=150)
-
-
-def as_utc(value: datetime | None) -> datetime | None:
-    # MongoDB returns naive UTC datetimes; mark them as UTC so browsers convert them to local
-    # time correctly.
-    if value is None:
-        return None
-    return value if value.tzinfo else value.replace(tzinfo=timezone.utc)
-
-
-def iso_utc(value: datetime | None) -> str | None:
-    value = as_utc(value)
-    return value.isoformat() if value else None
 
 
 def is_online(member: dict[str, Any], now: datetime) -> bool:

@@ -42,6 +42,18 @@ def reports_collection() -> Any:
     return reports
 
 
+def materials_collection() -> Any:
+    return get_client()["components"]["Materiel"]
+
+
+def activity_collection() -> Any:
+    return get_client()["components"]["Senaste"]
+
+
+def announcements_collection() -> Any:
+    return get_client()["inventory-manager"]["Meddelande"]
+
+
 def parse_object_id(value: str, detail: str) -> ObjectId:
     try:
         return ObjectId(value)
