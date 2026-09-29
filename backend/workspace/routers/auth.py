@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import os
 import re
 from datetime import datetime, timezone
 
@@ -15,14 +16,24 @@ LEGACY_SHA256 = re.compile(r"[0-9a-fA-F]{64}")
 INVALID_LOGIN = "Fel e-postadress eller lösenord."
 
 
+def _is_dev_admin(credentials: LoginCredentials) -> bool:
+    """Optional local admin login, enabled only when DEV_ADMIN_EMAIL and DEV_ADMIN_PASSWORD are set."""
+    email, password = os.getenv("DEV_ADMIN_EMAIL"), os.getenv("DEV_ADMIN_PASSWORD")
+    if not email or not password:
+        return False
+    return hmac.compare_digest(credentials.email.encode(), email.encode()) and hmac.compare_digest(
+        credentials.password.encode(), password.encode()
+    )
+
+
 def _session(name: str, email: str, role: str) -> dict[str, str]:
     return {"name": name, "email": email, "role": role, "access_token": issue_token(email, role)}
 
 
 @router.post("/login")
 def login(credentials: LoginCredentials) -> dict[str, str]:
-    if credentials.email == "admin@dev.local" and credentials.password == "Admin123!":
-        return _session("Admin", "admin@dev.local", "Admin")
+    if _is_dev_admin(credentials):
+        return _session("Admin", credentials.email, "Admin")
     members = members_collection()
     member = members.find_one(
         {"email": {"$regex": "^" + re.escape(credentials.email.strip()) + "$", "$options": "i"}},

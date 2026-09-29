@@ -1,3 +1,4 @@
+import os
 import unittest
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
@@ -95,10 +96,24 @@ class SessionTimestampTests(unittest.TestCase):
             client.post("/logout", headers=headers)
             self.assertFalse(client.get("/members").json()[0]["online"])
 
+    def test_dev_admin_login_only_works_when_configured(self):
+        credentials = {"email": "dev@example.com", "password": "dev-password"}
+        with patch("backend.workspace.routers.auth.members_collection", return_value=FakeMembers()):
+            with TestClient(app) as client:
+                with patch.dict(os.environ, {}, clear=False):
+                    os.environ.pop("DEV_ADMIN_EMAIL", None)
+                    os.environ.pop("DEV_ADMIN_PASSWORD", None)
+                    self.assertEqual(client.post("/login", json=credentials).status_code, 401)
+                env = {"DEV_ADMIN_EMAIL": "dev@example.com", "DEV_ADMIN_PASSWORD": "dev-password"}
+                with patch.dict(os.environ, env):
+                    self.assertEqual(client.post("/login", json=credentials).json()["role"], "Admin")
+                    wrong = {**credentials, "password": "nope"}
+                    self.assertEqual(client.post("/login", json=wrong).status_code, 401)
+
     def test_dev_admin_logout_does_not_fail(self):
         with patch("backend.workspace.routers.auth.members_collection", return_value=FakeMembers()):
             with TestClient(app) as client:
-                headers = {"Authorization": f"Bearer {issue_token('admin@dev.local', 'Admin')}"}
+                headers = {"Authorization": f"Bearer {issue_token('dev@example.com', 'Admin')}"}
                 self.assertEqual(client.post("/logout", headers=headers).status_code, 200)
 
 
