@@ -19,12 +19,12 @@ onMounted(loadDamageReports)
     </div>
     <div class="stats">
       <article v-for="statistic in overviewStatistics" :key="statistic.label">
-        <small>{{ statistic.label }}</small
-        ><b>{{
+        <small>{{ statistic.label }}</small>
+        <b>{{
           statistic.label === 'SKADAT' && damageReportsLoaded ? damagedCount : statistic.value
         }}</b>
-        <span>{{ statistic.unit }}</span
-        ><em v-if="statistic.change">{{ statistic.change }}</em>
+        <span>{{ statistic.unit }}</span>
+        <em v-if="statistic.change">{{ statistic.change }}</em>
       </article>
     </div>
     <div class="grid">
@@ -34,8 +34,8 @@ onMounted(loadDamageReports)
           <div class="row" v-for="activity in activities" :key="activity.title">
             <i :class="activity.color">{{ activity.icon }}</i>
             <div>
-              <b>{{ activity.title }}</b
-              ><small>{{ activity.description }}</small>
+              <b>{{ activity.title }}</b>
+              <small>{{ activity.description }}</small>
             </div>
             <time>{{ activity.time }}</time>
           </div>
@@ -66,8 +66,8 @@ onMounted(loadDamageReports)
         <article class="card capacity">
           <b>Lagerkapacitet</b><small>Totalt</small>
           <div v-for="capacity in warehouseCapacities" :key="capacity.name">
-            {{ capacity.name }} <span>{{ capacity.percentage }}</span
-            ><i><b :class="capacity.color" :style="{ width: capacity.percentage }" /></i>
+            {{ capacity.name }} <span>{{ capacity.percentage }}</span>
+            <i><b :class="capacity.color" :style="{ width: capacity.percentage }" /></i>
           </div>
           <a>Se full rapport　›</a>
         </article>

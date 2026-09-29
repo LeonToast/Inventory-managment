@@ -126,8 +126,8 @@ onUnmounted(() => {
     <aside>
       <div class="brand"><b>⬡</b><strong>Smart lagring</strong></div>
       <div class="menu">
-        <small>MENY</small
-        ><button
+        <small>MENY</small>
+        <button
           v-for="item in navigation"
           :key="item.label"
           :class="{ on: active === item.label }"
@@ -146,10 +146,11 @@ onUnmounted(() => {
           aria-controls="account-menu"
           @click="showAccountMenu = !showAccountMenu"
         >
-          <span>{{ accountInitials }}</span
-          ><b
+          <span>{{ accountInitials }}</span>
+          <b
             >{{ currentAccount?.name }}<small>{{ currentAccount?.role }}</small></b
-          ><span class="user-chevron" aria-hidden="true">›</span>
+          >
+          <span class="user-chevron" aria-hidden="true">›</span>
         </button>
         <div v-if="showAccountMenu" id="account-menu" class="user-menu" role="menu">
           <button type="button" role="menuitem" @click="logout">Logga ut</button>

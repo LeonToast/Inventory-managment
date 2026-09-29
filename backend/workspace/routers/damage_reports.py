@@ -29,9 +29,11 @@ def report_response(document: dict[str, Any]) -> dict[str, str]:
 
 @router.get("")
 def list_damage_reports(_: dict[str, str] = Depends(require_user)) -> list[dict[str, str]]:
-    reports = reports_collection().find(
-        {"kind": "damage"}, {"material_id": 1, "serial_number": 1, "reported_at": 1}
-    ).sort("reported_at", -1)
+    reports = (
+        reports_collection()
+        .find({"kind": "damage"}, {"material_id": 1, "serial_number": 1, "reported_at": 1})
+        .sort("reported_at", -1)
+    )
     return [report_response(item) for item in reports]
 
 

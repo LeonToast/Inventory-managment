@@ -133,8 +133,8 @@ onUnmounted(() => clearInterval(statusInterval))
         <b>Giltiga inloggningar</b><span>{{ members.length }} konto(n)</span>
       </header>
       <div class="user-head">
-        <span>ANVÄNDARE</span><span>ROLL</span><span>SENASTE INLOGGNING</span
-        ><span>SENASTE UTLOGGNING</span><span>STATUS</span><span></span>
+        <span>ANVÄNDARE</span><span>ROLL</span><span>SENASTE INLOGGNING</span>
+        <span>SENASTE UTLOGGNING</span><span>STATUS</span><span></span>
       </div>
       <div v-if="members.length === 0 && !error" class="empty-applications">
         Inga godkända konton ännu.
@@ -184,11 +184,11 @@ onUnmounted(() => clearInterval(statusInterval))
             ><small>{{ application.email }}</small></span
           >
         </div>
-        <span>Ny ansökan</span><span>Medlem</span
-        ><span><strong class="wait">● Väntar</strong></span>
+        <span>Ny ansökan</span><span>Medlem</span>
+        <span><strong class="wait">● Väntar</strong></span>
         <span
-          ><button @click="validateApplication(application.id)">Validera</button
-          ><button class="reject" @click="rejectApplication(application.id)">Avvisa</button></span
+          ><button @click="validateApplication(application.id)">Validera</button>
+          <button class="reject" @click="rejectApplication(application.id)">Avvisa</button></span
         >
       </div>
     </article>

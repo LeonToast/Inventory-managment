@@ -69,8 +69,8 @@ const submitSignup = async () => {
     <header class="landing-nav">
       <div class="landing-brand"><span aria-hidden="true">▦</span><b>Smart Lagring</b></div>
       <nav aria-label="Huvudmeny">
-        <a href="#home">Hem</a><a href="#landing-features">Materiel</a
-        ><a href="#landing-features">Platser</a><a href="#landing-features">Rapporter</a>
+        <a href="#home">Hem</a><a href="#landing-features">Materiel</a>
+        <a href="#landing-features">Platser</a><a href="#landing-features">Rapporter</a>
       </nav>
     </header>
     <main id="home" class="landing-main">
@@ -90,8 +90,8 @@ const submitSignup = async () => {
         built for modern businesses.
       </p>
       <div class="landing-actions">
-        <button @click="showLoginForm = true">Logga in</button
-        ><button class="secondary" @click="showSignupForm = true">Formulär</button>
+        <button @click="showLoginForm = true">Logga in</button>
+        <button class="secondary" @click="showSignupForm = true">Formulär</button>
       </div>
       <section id="landing-features" class="landing-features">
         <h2>Allt du behöver för smartare lager</h2>
@@ -108,20 +108,22 @@ const submitSignup = async () => {
         <small>WAREHOUSE MANAGEMENT SYSTEM</small>
         <p>Skapa konto</p>
         <form @submit.prevent="submitSignup">
-          <label>Namn<input v-model="signupForm.name" placeholder="Förnamn Efternamn" /></label
-          ><label
+          <label>Namn<input v-model="signupForm.name" placeholder="Förnamn Efternamn" /></label>
+          <label
             >E-postadress<input
               type="email"
               :class="{ invalid: showSignupErrors && !emailValid }"
               v-model="signupForm.email"
-              placeholder="namn@foretag.se" /></label
-          ><label
+              placeholder="namn@foretag.se"
+          /></label>
+          <label
             >Lösenord<input
               :class="{ invalid: showSignupErrors && signupForm.password.length < 8 }"
               v-model="signupForm.password"
               type="password"
-              placeholder="••••••••" /></label
-          ><label
+              placeholder="••••••••"
+          /></label>
+          <label
             >Bekräfta lösenord<input
               :class="{
                 invalid:
@@ -141,8 +143,8 @@ const submitSignup = async () => {
         </form>
         <footer>
           Har du redan ett konto?
-          <b @click="openLoginFromSignup">Logga in</b
-          ><small>© Smart Lagring. Alla rättigheter förbehålls.</small>
+          <b @click="openLoginFromSignup">Logga in</b>
+          <small>© Smart Lagring. Alla rättigheter förbehålls.</small>
         </footer>
       </div>
     </div>
@@ -159,14 +161,16 @@ const submitSignup = async () => {
               v-model="loginForm.email"
               type="email"
               placeholder="namn@foretag.se"
-              required /></label
-          ><label
+              required
+          /></label>
+          <label
             >Lösenord<input
               v-model="loginForm.password"
               type="password"
               placeholder="••••••••"
-              required /></label
-          ><a>Glömt lösenord?</a>
+              required
+          /></label>
+          <a>Glömt lösenord?</a>
           <p v-if="loginError" class="login-error">{{ loginError }}</p>
           <button type="submit">Logga in →</button>
         </form>

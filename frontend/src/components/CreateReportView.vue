@@ -19,18 +19,21 @@ defineEmits<{ back: [] }>()
           <option>Leveransrapport</option>
           <option>Avvikelserapport</option>
         </select></label
-      ><label
+      >
+      <label
         >Period<select>
           <option>Oktober 2024</option>
           <option>September 2024</option>
           <option>Senaste 30 dagarna</option>
         </select></label
-      ><label
+      >
+      <label
         >Inkludera lager
         <div class="checks">
           <span>✓ Lager A</span><span>✓ Lager B</span><span>✓ Lager C</span>
         </div></label
-      ><label
+      >
+      <label
         >Beskrivning<textarea placeholder="Lägg till en kort beskrivning (valfritt)"></textarea>
       </label>
     </div>

@@ -53,9 +53,10 @@ def login(credentials: LoginCredentials) -> dict[str, str]:
             hashlib.sha256(credentials.password.encode()).hexdigest(), stored_hash.lower()
         )
         if valid_password:  # Upgrade legacy SHA-256 hashes to Argon2 on successful login.
-            members.update_one({"_id": member["_id"]}, {"$set": {
-                "password_hash": password_hash.hash(credentials.password)
-            }})
+            members.update_one(
+                {"_id": member["_id"]},
+                {"$set": {"password_hash": password_hash.hash(credentials.password)}},
+            )
     if not valid_password:
         raise HTTPException(status_code=401, detail=INVALID_LOGIN)
     now = datetime.now(timezone.utc)

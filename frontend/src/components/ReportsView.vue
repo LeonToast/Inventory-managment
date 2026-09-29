@@ -27,8 +27,8 @@ defineProps<{ isAdmin: boolean }>()
       <i :class="announcement.tone">▤</i>
       <div>
         <div class="announcement-top">
-          <span class="tag" :class="announcement.tone">{{ announcement.category }}</span
-          ><time>{{ announcement.date }}</time>
+          <span class="tag" :class="announcement.tone">{{ announcement.category }}</span>
+          <time>{{ announcement.date }}</time>
         </div>
         <h2>{{ announcement.title }}</h2>
         <p>{{ announcement.text }}</p>

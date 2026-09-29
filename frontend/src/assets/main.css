@@ -26,9 +26,7 @@ a,
 body {
   min-width: 320px;
 }
-.app {
-  min-width: 0;
-}
+
 * {
   box-sizing: border-box;
 }
@@ -44,6 +42,7 @@ body {
 }
 
 .app {
+  min-width: 0;
   display: flex;
   min-height: 100vh;
 }
@@ -388,26 +387,6 @@ a {
   font-size: 10px;
 }
 
-.blue {
-  background: #edf3ff;
-  color: #4f82e9;
-}
-
-.amber {
-  background: #fff7df;
-  color: #dda824;
-}
-
-.green {
-  background: #eaf7ed;
-  color: #5ead78;
-}
-
-.purple {
-  background: #f0edff;
-  color: #8064e8;
-}
-
 .overview {
   padding-bottom: 20px;
 }
@@ -606,173 +585,11 @@ a {
     display: none;
   }
 }
-.material-intro {
-  align-items: end;
-}
-.material-actions {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  color: #8993a1;
-  font-size: 11px;
-}
+
 .material-actions:first-letter {
   color: #dda824;
 }
-.material-actions button {
-  border: 0;
-  background: #111216;
-  color: #fff;
-  border-radius: 7px;
-  padding: 11px 16px;
-  font-weight: 700;
-  font-size: 11px;
-}
-.material-toolbar {
-  height: 82px;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  background: #fff;
-  border: 1px solid #dfe2e6;
-  border-radius: 10px;
-  color: #718096;
-  font-size: 11px;
-}
-.search {
-  height: 40px;
-  border: 1px solid #dfe2e6;
-  border-radius: 7px;
-  display: flex;
-  align-items: center;
-  padding: 0 12px;
-  color: #99a3b2;
-  flex: 1;
-  font-size: 12px;
-}
-.material-toolbar nav {
-  display: flex;
-  background: #f4f5f7;
-  border-radius: 8px;
-  padding: 4px;
-  gap: 3px;
-}
-.material-toolbar nav > * {
-  padding: 9px 14px;
-  font-weight: 400;
-}
-.material-toolbar nav b {
-  background: #fff;
-  border-radius: 6px;
-  color: #44516a;
-  box-shadow: 0 1px 3px #0001;
-}
-.material-toolbar button {
-  height: 40px;
-  border: 1px solid #dfe2e6;
-  background: #fff;
-  border-radius: 7px;
-  color: #526079;
-  font-size: 11px;
-  padding: 0 14px;
-}
-.material-heading {
-  display: flex;
-  justify-content: space-between;
-  margin: 30px 0 18px;
-  font-size: 13px;
-}
-.material-heading span {
-  color: #8f99a7;
-  font-size: 11px;
-}
-.material-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.material-card {
-  background: #fff;
-  border: 1px solid #dfe2e6;
-  border-radius: 10px;
-  padding: 16px;
-}
-.material-name {
-  display: flex;
-  align-items: start;
-  gap: 12px;
-}
-.material-name > i {
-  font-style: normal;
-  background: #edf3ff;
-  color: #4f82e9;
-  padding: 10px;
-  border-radius: 7px;
-}
-.material-name div {
-  flex: 1;
-}
-.material-name b {
-  display: block;
-  color: #17345c;
-  font-size: 13px;
-}
-.material-name small {
-  display: block;
-  color: #8f9aaa;
-  font-size: 10px;
-  margin-top: 5px;
-}
-.material-name em {
-  background: #f1f3f6;
-  color: #708096;
-  border-radius: 9px;
-  padding: 4px 8px;
-  font-size: 9px;
-  font-style: normal;
-}
-.material-card hr {
-  border: 0;
-  border-top: 1px solid #edf0f2;
-  margin: 18px 0 14px;
-}
-.material-card label {
-  color: #9aa3b0;
-  font-size: 10px;
-}
-.material-card label strong {
-  float: right;
-  color: #18243a;
-  font-size: 16px;
-}
-.material-card label strong small {
-  font-size: 9px;
-  color: #728096;
-  font-weight: 400;
-}
-.material-card p {
-  font-size: 10px;
-  color: #536a8d;
-  margin: 12px 0;
-}
-.material-card p b {
-  float: right;
-  color: #1e395f;
-  font-weight: 500;
-}
-.material-card footer {
-  border-top: 1px solid #edf0f2;
-  padding-top: 13px;
-  margin-top: 13px;
-  color: #a18b67;
-  font-size: 10px;
-}
-.material-card footer b {
-  float: right;
-  color: #c87916;
-  font-weight: 500;
-}
+
 @media (max-width: 800px) {
   .material-grid {
     grid-template-columns: 1fr;
@@ -1258,21 +1075,6 @@ a {
   font-weight: 500;
 }
 
-.blue {
-  background: #eaf1ff;
-  color: #4778df;
-}
-
-.green {
-  background: #e8f7ed;
-  color: #4ca375;
-}
-
-.amber {
-  background: #fff3d7;
-  color: #c88a18;
-}
-
 .gray {
   background: #f0f2f4;
   color: #718096;
@@ -1283,38 +1085,45 @@ a {
 .account-page {
   padding: 34px 40px;
 }
+
 .account-intro {
   display: flex;
   justify-content: space-between;
   align-items: end;
   margin-bottom: 24px;
 }
+
 .account-intro h1 {
   margin: 0 0 8px;
   font-size: 28px;
   letter-spacing: -1px;
 }
+
 .account-intro p {
   margin: 0;
   color: #97a0ae;
   font-size: 12px;
 }
+
 .account-intro > span {
   color: #8993a1;
   font-size: 11px;
 }
+
 .account-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 12px;
   margin-bottom: 16px;
 }
+
 .account-stats article {
   background: #fff;
   border: 1px solid #dfe2e6;
   border-radius: 10px;
   padding: 17px 20px;
 }
+
 .account-stats small {
   display: block;
   color: #8894a5;
@@ -1322,14 +1131,17 @@ a {
   font-size: 9px;
   margin-bottom: 14px;
 }
+
 .account-stats b {
   font-size: 25px;
 }
+
 .account-stats span {
   color: #89909d;
   font-size: 10px;
   margin-left: 6px;
 }
+
 .account-filter {
   height: 82px;
   padding: 20px;
@@ -1343,6 +1155,7 @@ a {
   color: #718096;
   font-size: 11px;
 }
+
 .account-filter > div {
   height: 40px;
   border: 1px solid #dfe2e6;
@@ -1354,6 +1167,7 @@ a {
   flex: 1;
   font-size: 12px;
 }
+
 .account-filter nav {
   display: flex;
   background: #f4f5f7;
@@ -1361,15 +1175,18 @@ a {
   padding: 4px;
   gap: 3px;
 }
+
 .account-filter nav > * {
   padding: 9px 14px;
 }
+
 .account-filter nav b {
   background: #fff;
   border-radius: 6px;
   color: #44516a;
   box-shadow: 0 1px 3px #0001;
 }
+
 .account-filter button {
   height: 40px;
   border: 0;
@@ -1380,12 +1197,14 @@ a {
   font-weight: 700;
   font-size: 11px;
 }
+
 .user-table {
   background: #fff;
   border: 1px solid #dfe2e6;
   border-radius: 10px;
   overflow: hidden;
 }
+
 .user-table > header {
   height: 52px;
   border-bottom: 1px solid #e9ebee;
@@ -1396,10 +1215,12 @@ a {
   color: #8993a1;
   font-size: 11px;
 }
+
 .user-table > header b {
   color: #111318;
   font-size: 13px;
 }
+
 .user-head,
 .user-row {
   display: grid;
@@ -1408,6 +1229,7 @@ a {
   align-items: center;
   padding: 0 20px;
 }
+
 .user-head {
   height: 35px;
   color: #8995a5;
@@ -1415,20 +1237,24 @@ a {
   font-size: 9px;
   border-bottom: 1px solid #edf0f2;
 }
+
 .user-row {
   height: 69px;
   border-bottom: 1px solid #edf0f2;
   color: #536a8d;
   font-size: 10px;
 }
+
 .user-row:last-child {
   border: 0;
 }
+
 .person {
   display: flex;
   align-items: center;
   gap: 12px;
 }
+
 .person > i {
   width: 36px;
   height: 36px;
@@ -1439,24 +1265,29 @@ a {
   font-weight: 600;
   font-size: 10px;
 }
+
 .person b {
   display: block;
   color: #17345c;
   font-size: 12px;
 }
+
 .person small {
   display: block;
   color: #8f9aaa;
   font-size: 10px;
   margin-top: 5px;
 }
+
 .user-row strong {
   color: #4ca375;
   font-weight: 500;
 }
+
 .user-row strong.wait {
   color: #c88a18;
 }
+
 .user-row button {
   border: 0;
   background: #d8635d;
@@ -1466,76 +1297,38 @@ a {
   font-size: 10px;
   font-weight: 600;
 }
-.blue {
-  background: #e8f0ff;
-  color: #4778df;
-}
-.green {
-  background: #e8f7ed;
-  color: #4ca375;
-}
-.purple {
-  background: #f0edff;
-  color: #8064e8;
-}
-.amber {
-  background: #fff3d7;
-  color: #c88a18;
-}
+
 .teal {
   background: #e8f6f5;
   color: #4da4a0;
 }
 
 /* ReportsView.vue â€” Rapporter page styles */
-.announcement {
-  padding: 14px 16px;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-.announcement > i {
-  width: 30px;
-  height: 30px;
-}
-.announcement h2 {
-  margin: 7px 0 4px;
-  font-size: 12px;
-}
-.announcement p {
-  margin: 0 0 7px;
-  font-size: 10px;
-}
-.announcement a {
-  font-size: 10px;
-}
-.announcement-top time {
-  font-size: 9px;
-}
-.tag {
-  padding: 4px 7px;
-  font-size: 8px;
-}
 
 .reports-page {
   padding: 34px 40px;
   max-width: 1100px;
 }
+
 .reports-intro {
   display: flex;
   justify-content: space-between;
   align-items: end;
   margin-bottom: 24px;
 }
+
 .reports-intro h1 {
   margin: 0 0 8px;
   font-size: 28px;
   letter-spacing: -1px;
 }
+
 .reports-intro p {
   margin: 0;
   color: #97a0ae;
   font-size: 12px;
 }
+
 .reports-intro button {
   border: 0;
   background: #111216;
@@ -1545,6 +1338,7 @@ a {
   font-weight: 700;
   font-size: 11px;
 }
+
 .reports-toolbar {
   height: 82px;
   padding: 20px;
@@ -1555,6 +1349,7 @@ a {
   border: 1px solid #dfe2e6;
   border-radius: 10px;
 }
+
 .reports-toolbar > div {
   height: 40px;
   border: 1px solid #dfe2e6;
@@ -1566,6 +1361,7 @@ a {
   flex: 1;
   font-size: 12px;
 }
+
 .reports-toolbar nav {
   display: flex;
   background: #f4f5f7;
@@ -1573,140 +1369,148 @@ a {
   padding: 4px;
   gap: 3px;
 }
+
 .reports-toolbar nav > * {
   padding: 9px 14px;
   color: #718096;
   font-size: 11px;
 }
+
 .reports-toolbar nav b {
   background: #fff;
   border-radius: 6px;
   color: #44516a;
   box-shadow: 0 1px 3px #0001;
 }
+
 .reports-heading {
   display: flex;
   justify-content: space-between;
   margin: 30px 0 14px;
   font-size: 13px;
 }
+
 .reports-heading span {
   color: #8f99a7;
   font-size: 11px;
 }
+
 .announcement {
   display: flex;
-  gap: 16px;
   background: #fff;
   border: 1px solid #dfe2e6;
   border-radius: 10px;
-  padding: 20px;
-  margin-bottom: 12px;
 }
+
 .announcement.featured {
   border-color: #cddcff;
   box-shadow: 0 2px 8px #4778df12;
 }
+
 .announcement > i {
-  width: 38px;
-  height: 38px;
   display: grid;
   place-items: center;
   border-radius: 8px;
   font-style: normal;
 }
+
 .announcement > div {
   flex: 1;
 }
+
 .announcement-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-.tag {
-  padding: 5px 8px;
-  border-radius: 12px;
-  font-size: 9px;
-}
+
 .announcement time {
   color: #98a2b1;
   font-size: 10px;
 }
+
 .announcement h2 {
-  margin: 12px 0 6px;
   color: #17345c;
-  font-size: 14px;
 }
+
 .announcement p {
-  margin: 0 0 12px;
   color: #77869a;
-  font-size: 11px;
 }
+
 .announcement a {
   color: #4778df;
-  font-size: 11px;
 }
+
 .blue {
   background: #edf3ff;
   color: #4f82e9;
 }
+
 .amber {
   background: #fff7df;
   color: #dda824;
 }
+
 .purple {
   background: #f0edff;
   color: #8064e8;
 }
+
 .green {
   background: #eaf7ed;
   color: #5ead78;
 }
 
 /* Compact announcement cards */
+
 .announcement {
-  padding: 14px 16px;
-  gap: 12px;
   margin-bottom: 8px;
 }
-.announcement > i {
-  width: 30px;
-  height: 30px;
-}
+
 .announcement h2 {
-  margin: 7px 0 4px;
   font-size: 12px;
 }
+
 .announcement p {
   margin: 0 0 7px;
   font-size: 10px;
 }
+
 .announcement a {
   font-size: 10px;
 }
+
 .announcement-top time {
   font-size: 9px;
 }
+
 .tag {
+  border-radius: 12px;
   padding: 4px 7px;
   font-size: 8px;
 }
 
 /* Shorter announcement cards */
+
 .announcement {
+  gap: 12px;
   padding: 10px 14px;
   min-height: 0;
 }
+
 .announcement > i {
   width: 26px;
   height: 26px;
 }
+
 .announcement h2 {
   margin: 5px 0 3px;
 }
+
 .announcement p {
   margin-bottom: 4px;
 }
+
 .announcement-top .tag {
   padding: 3px 6px;
 }
@@ -1717,6 +1521,7 @@ a {
   padding: 34px 40px;
   max-width: 900px;
 }
+
 .back {
   border: 0;
   background: none;
@@ -1726,21 +1531,25 @@ a {
   font-size: 11px;
   cursor: pointer;
 }
+
 .form-heading {
   display: flex;
   justify-content: space-between;
   align-items: end;
   margin-bottom: 24px;
 }
+
 .form-heading h1 {
   margin: 0 0 8px;
   font-size: 28px;
 }
+
 .form-heading p {
   margin: 0;
   color: #97a0ae;
   font-size: 12px;
 }
+
 .primary {
   background: #111216;
   color: #fff;
@@ -1750,6 +1559,7 @@ a {
   font-size: 11px;
   font-weight: 700;
 }
+
 .form-card {
   background: #fff;
   border: 1px solid #dfe2e6;
@@ -1759,6 +1569,7 @@ a {
   grid-template-columns: 1fr 1fr;
   gap: 22px;
 }
+
 .form-card label {
   display: flex;
   flex-direction: column;
@@ -1766,9 +1577,11 @@ a {
   color: #53627a;
   font-size: 11px;
 }
+
 .form-card label:last-child {
   grid-column: 1/-1;
 }
+
 select,
 textarea {
   font: inherit;
@@ -1778,14 +1591,17 @@ textarea {
   color: #44516a;
   background: #fff;
 }
+
 textarea {
   min-height: 100px;
   resize: vertical;
 }
+
 .checks {
   display: flex;
   gap: 10px;
 }
+
 .checks span {
   background: #edf3ff;
   color: #4778df;
@@ -1795,6 +1611,7 @@ textarea {
 }
 
 /* MaterialView.vue — add material modal */
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -1803,6 +1620,7 @@ textarea {
   place-items: center;
   z-index: 10;
 }
+
 .material-modal {
   position: relative;
   width: 480px;
@@ -1811,6 +1629,7 @@ textarea {
   padding: 24px;
   box-shadow: 0 15px 50px #0003;
 }
+
 .modal-close {
   position: absolute;
   right: 20px;
@@ -1820,6 +1639,7 @@ textarea {
   color: #9aa3b0;
   font-size: 22px;
 }
+
 .modal-icon {
   width: 40px;
   height: 40px;
@@ -1831,22 +1651,26 @@ textarea {
   place-items: center;
   font-size: 20px;
 }
+
 .material-modal h2 {
   text-align: center;
   margin: 0;
   font-size: 21px;
 }
+
 .material-modal > p {
   text-align: center;
   color: #9aa3b0;
   font-size: 11px;
   margin: 8px 0 25px;
 }
+
 .material-modal form {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
+
 .material-modal label {
   display: flex;
   flex-direction: column;
@@ -1854,10 +1678,12 @@ textarea {
   color: #536075;
   font-size: 10px;
 }
+
 .material-modal .full,
 .modal-actions {
   grid-column: 1/-1;
 }
+
 .material-modal input,
 .material-modal select {
   height: 40px;
@@ -1867,12 +1693,14 @@ textarea {
   font: inherit;
   color: #526079;
 }
+
 .modal-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
   margin-top: 4px;
 }
+
 .modal-actions button {
   height: 40px;
   border: 1px solid #dfe2e6;
@@ -1882,6 +1710,7 @@ textarea {
   font-weight: 600;
   font-size: 11px;
 }
+
 .modal-actions button:last-child {
   background: #111216;
   color: #fff;
@@ -1889,6 +1718,7 @@ textarea {
 }
 
 /* DeliveryView.vue — register delivery modal */
+
 .delivery-modal {
   position: relative;
   width: 480px;
@@ -1897,22 +1727,26 @@ textarea {
   padding: 24px;
   box-shadow: 0 15px 50px #0003;
 }
+
 .delivery-modal h2 {
   text-align: center;
   margin: 0;
   font-size: 21px;
 }
+
 .delivery-modal > p {
   text-align: center;
   color: #9aa3b0;
   font-size: 11px;
   margin: 8px 0 25px;
 }
+
 .delivery-modal form {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
+
 .delivery-modal label {
   display: flex;
   flex-direction: column;
@@ -1920,9 +1754,11 @@ textarea {
   color: #536075;
   font-size: 10px;
 }
+
 .delivery-modal .full {
   grid-column: 1/-1;
 }
+
 .delivery-modal input,
 .delivery-modal select {
   height: 40px;
@@ -1932,14 +1768,17 @@ textarea {
   font: inherit;
   color: #526079;
 }
+
 .delivery-modal input:focus {
   outline: 1px solid #4778df;
 }
+
 .delivery-modal .modal-actions {
   grid-column: 1/-1;
 }
 
 /* AccountView.vue — create user modal */
+
 .account-modal {
   position: relative;
   width: 420px;
@@ -1947,21 +1786,25 @@ textarea {
   border-radius: 16px;
   padding: 24px;
 }
+
 .account-modal h2 {
   text-align: center;
   margin: 0;
   font-size: 21px;
 }
+
 .account-modal > p {
   text-align: center;
   color: #9aa3b0;
   font-size: 11px;
   margin: 8px 0 26px;
 }
+
 .account-modal form {
   display: grid;
   gap: 16px;
 }
+
 .account-modal label {
   display: flex;
   flex-direction: column;
@@ -1969,6 +1812,7 @@ textarea {
   color: #536075;
   font-size: 10px;
 }
+
 .account-modal input,
 .account-modal select {
   height: 40px;
@@ -1978,6 +1822,7 @@ textarea {
   font: inherit;
   color: #526079;
 }
+
 .input-icon {
   height: 40px;
   border: 1px solid #dfe2e6;
@@ -1987,11 +1832,13 @@ textarea {
   padding-left: 12px;
   color: #9aa3b0;
 }
+
 .input-icon input {
   border: 0;
   flex: 1;
   outline: 0;
 }
+
 .account-submit {
   height: 40px;
   background: #111216;
@@ -2001,6 +1848,7 @@ textarea {
   font-size: 11px;
   font-weight: 700;
 }
+
 .account-note {
   display: block;
   text-align: center;
@@ -2010,15 +1858,18 @@ textarea {
 }
 
 /* Compact email input spacing */
+
 .account-modal .input-icon {
   padding-left: 10px;
 }
+
 .account-modal .input-icon input {
   height: 38px;
   padding: 0 8px;
 }
 
 /* LandingView.vue — landing page */
+
 .landing-page {
   min-height: 100vh;
   background: #f4f5f7;
@@ -2026,6 +1877,7 @@ textarea {
   max-width: 1440px;
   margin: 0 auto;
 }
+
 .landing-nav {
   height: 50px;
   background: #050505;
@@ -2035,12 +1887,14 @@ textarea {
   justify-content: space-between;
   padding: 0 24px;
 }
+
 .landing-brand {
   display: flex;
   align-items: center;
   gap: 9px;
   font-size: 13px;
 }
+
 .landing-brand span {
   width: 23px;
   height: 23px;
@@ -2051,14 +1905,17 @@ textarea {
   color: #fff;
   font-size: 17px;
 }
+
 .landing-nav nav {
   display: flex;
   gap: 25px;
 }
+
 .landing-nav a {
   color: #aeb0b4;
   font-size: 10px;
 }
+
 .landing-main {
   min-height: calc(100vh - 50px);
   padding: 42px 24px 60px;
@@ -2069,6 +1926,7 @@ textarea {
     radial-gradient(circle at 88% 85%, #d3d4d5 0 145px, transparent 146px);
   background-color: #e3e4e5;
 }
+
 .landing-icon {
   width: 68px;
   height: 75px;
@@ -2081,28 +1939,33 @@ textarea {
   font-size: 29px;
   box-shadow: 0 5px 12px #0003;
 }
+
 .landing-icon small {
   font-size: 12px;
   margin-top: -30px;
   margin-left: 18px;
 }
+
 .landing-eyebrow {
   color: #a3a5a7;
   font-size: 9px;
   letter-spacing: 2px;
 }
+
 .landing-main h1 {
   font-size: clamp(38px, 5vw, 52px);
   font-weight: 400;
   margin: 30px 0 6px;
   letter-spacing: -2px;
 }
+
 .landing-rule {
   width: 45px;
   height: 3px;
   background: #111;
   margin: 0 auto 18px;
 }
+
 .landing-main > p {
   max-width: 430px;
   color: #6d7073;
@@ -2110,6 +1973,7 @@ textarea {
   line-height: 1.65;
   margin: 0 auto;
 }
+
 .landing-actions {
   display: flex;
   flex-direction: column;
@@ -2117,6 +1981,7 @@ textarea {
   gap: 9px;
   margin-top: 30px;
 }
+
 .landing-actions button {
   width: 172px;
   height: 45px;
@@ -2128,33 +1993,39 @@ textarea {
   cursor: pointer;
   box-shadow: 0 3px 8px #0002;
 }
+
 .landing-actions .secondary {
   background: transparent;
   border: 1px solid #111;
   color: #111;
   box-shadow: none;
 }
+
 .landing-features {
   margin: 60px auto 0;
   padding: 35px 20px;
   border-top: 1px solid #c6c7c8;
   max-width: 748px;
 }
+
 .landing-features h2 {
   font-size: 21px;
   font-weight: 500;
   margin: 0 0 5px;
 }
+
 .landing-features p {
   color: #6d7073;
   font-size: 13px;
 }
 
 /* The landing header shares the global header element styles; keep its brand readable. */
+
 .landing-nav .landing-brand b {
   color: #fff;
   font-weight: 600;
 }
+
 .landing-icon svg {
   width: 32px;
   height: 32px;
@@ -2163,11 +2034,13 @@ textarea {
   stroke: currentColor;
   stroke-width: 1.8;
 }
+
 .landing-icon .landing-icon-small {
   fill: #080808;
 }
 
 /* LandingView.vue — signup form */
+
 .signup-backdrop {
   position: fixed;
   inset: 0;
@@ -2176,15 +2049,14 @@ textarea {
   place-items: center;
   z-index: 20;
 }
+
 .signup-card {
   position: relative;
-  width: 250px;
   background: #fff;
   border-radius: 15px;
-  padding: 20px;
-  box-shadow: 0 15px 45px #0002;
   text-align: center;
 }
+
 .signup-close {
   position: absolute;
   right: 14px;
@@ -2194,164 +2066,121 @@ textarea {
   color: #8d96a1;
   font-size: 20px;
 }
+
 .signup-icon {
-  width: 36px;
-  height: 36px;
   margin: 0 auto 12px;
   background: #080808;
   color: #fff;
   border-radius: 9px;
   display: grid;
-  place-items: center;
 }
+
 .signup-card h2 {
-  font-size: 15px;
   margin: 0 0 3px;
 }
+
 .signup-card > small {
-  font-size: 6px;
-  letter-spacing: 1.5px;
   color: #9299a3;
 }
+
 .signup-card > p {
-  font-size: 9px;
   color: #747d89;
-  margin: 24px 0 15px;
 }
+
 .signup-card form {
   display: flex;
-  flex-direction: column;
-  gap: 11px;
-  text-align: left;
 }
+
 .signup-card label {
-  font-size: 8px;
   color: #4f5b6c;
 }
+
 .signup-card input {
   display: block;
   width: 100%;
-  height: 28px;
   border: 0;
   border-radius: 7px;
   background: #f3f3f5;
-  margin-top: 5px;
-  padding: 0 10px;
-  font-size: 8px;
 }
+
 .signup-card form button {
-  height: 29px;
-  border: 0;
-  border-radius: 7px;
-  background: #080808;
   color: #fff;
-  font-size: 8px;
   font-weight: 700;
-  margin-top: 5px;
 }
+
 .signup-card footer {
-  font-size: 8px;
   color: #8d96a1;
-  margin-top: 13px;
 }
+
 .signup-card footer b {
   color: #111;
   cursor: pointer;
 }
-.signup-card footer small {
-  display: block;
-  font-size: 6px;
-  margin-top: 22px;
-}
 
 /* Desktop signup form sizing */
-.signup-card {
-  width: 420px;
-  padding: 30px 28px;
-}
-.signup-icon {
-  width: 44px;
-  height: 44px;
-  margin-bottom: 16px;
-}
-.signup-card h2 {
-  font-size: 20px;
-}
-.signup-card > small {
-  font-size: 8px;
-}
-.signup-card > p {
-  font-size: 11px;
-  margin: 25px 0 20px;
-}
-.signup-card form {
-  gap: 15px;
-}
-.signup-card label {
-  font-size: 10px;
-}
-.signup-card input {
-  height: 40px;
-  margin-top: 7px;
-  padding: 0 12px;
-  font-size: 11px;
-}
-.signup-card form button {
-  height: 40px;
-  font-size: 11px;
-  margin-top: 7px;
-}
-.signup-card footer {
-  font-size: 10px;
-  margin-top: 17px;
-}
-.signup-card footer small {
-  font-size: 8px;
-  margin-top: 25px;
-}
 
 /* Landing page desktop width; keep signup modal compact */
+
 .signup-card {
+  box-shadow: 0 15px 45px #0002;
   width: 250px;
   padding: 20px;
 }
+
 .signup-icon {
+  place-items: center;
   width: 36px;
   height: 36px;
   margin-bottom: 12px;
 }
+
 .signup-card h2 {
   font-size: 15px;
 }
+
 .signup-card > small {
+  letter-spacing: 1.5px;
   font-size: 6px;
 }
+
 .signup-card > p {
   font-size: 9px;
   margin: 24px 0 15px;
 }
+
 .signup-card form {
+  flex-direction: column;
+  text-align: left;
   gap: 11px;
 }
+
 .signup-card label {
   font-size: 8px;
 }
+
 .signup-card input {
   height: 28px;
   margin-top: 5px;
   padding: 0 10px;
   font-size: 8px;
 }
+
 .signup-card form button {
+  border: 0;
+  border-radius: 7px;
+  background: #080808;
   height: 29px;
   font-size: 8px;
   margin-top: 5px;
 }
+
 .signup-card footer {
   font-size: 8px;
   margin-top: 13px;
 }
+
 .signup-card footer small {
+  display: block;
   font-size: 6px;
   margin-top: 22px;
 }
@@ -2382,6 +2211,7 @@ textarea {
 }
 
 /* Keep the landing page's main actions in view on short browser windows. */
+
 @media (max-height: 500px) {
   .landing-main {
     min-height: calc(100vh - 50px);
@@ -2426,6 +2256,7 @@ textarea {
 }
 
 /* Global button hover feedback */
+
 button {
   transition:
     background-color 0.15s ease,
@@ -2434,20 +2265,24 @@ button {
     box-shadow 0.15s ease,
     transform 0.15s ease;
 }
+
 button:not(:disabled):hover {
   filter: brightness(1.12);
   box-shadow: 0 3px 10px #0002;
   transform: translateY(-1px);
 }
+
 button:not(:disabled):active {
   transform: translateY(0);
 }
+
 button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
 
 /* LandingView.vue — login modal */
+
 .login-backdrop {
   position: fixed;
   inset: 0;
@@ -2456,6 +2291,7 @@ button:disabled {
   place-items: center;
   z-index: 21;
 }
+
 .login-card {
   position: relative;
   width: 320px;
@@ -2465,30 +2301,36 @@ button:disabled {
   box-shadow: 0 15px 45px #0002;
   text-align: center;
 }
+
 .login-card h2 {
   font-size: 16px;
   margin: 0 0 3px;
 }
+
 .login-card > small {
   font-size: 6px;
   letter-spacing: 1px;
   color: #9299a3;
 }
+
 .login-card > p {
   font-size: 9px;
   color: #8d96a1;
   margin: 23px 0 14px;
 }
+
 .login-card form {
   text-align: left;
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
+
 .login-card label {
   font-size: 8px;
   color: #4f5b6c;
 }
+
 .login-card input {
   display: block;
   width: 100%;
@@ -2500,11 +2342,13 @@ button:disabled {
   padding: 0 10px;
   font-size: 9px;
 }
+
 .login-card form a {
   text-align: right;
   color: #53627a;
   font-size: 8px;
 }
+
 .login-card form button {
   height: 31px;
   border: 0;
@@ -2514,6 +2358,7 @@ button:disabled {
   font-size: 9px;
   font-weight: 700;
 }
+
 .login-card footer {
   font-size: 7px;
   color: #a1a9b5;
@@ -2524,6 +2369,7 @@ button:disabled {
   border: 1px solid #d85c5c;
   background: #fff7f7;
 }
+
 .signup-errors {
   color: #c94f4f;
   font-size: 8px;
@@ -2532,6 +2378,7 @@ button:disabled {
 }
 
 /* LandingView.vue — registration confirmation */
+
 .pending-backdrop {
   position: fixed;
   inset: 0;
@@ -2540,6 +2387,7 @@ button:disabled {
   place-items: center;
   z-index: 22;
 }
+
 .pending-card {
   width: 320px;
   background: #fff;
@@ -2548,6 +2396,7 @@ button:disabled {
   text-align: center;
   box-shadow: 0 15px 45px #0002;
 }
+
 .pending-icon {
   width: 42px;
   height: 42px;
@@ -2559,15 +2408,18 @@ button:disabled {
   place-items: center;
   font-size: 22px;
 }
+
 .pending-card h2 {
   margin: 0 0 8px;
   font-size: 18px;
 }
+
 .pending-card p {
   margin: 0 0 22px;
   color: #7d8794;
   font-size: 11px;
 }
+
 .pending-card button {
   width: 100%;
   height: 38px;
@@ -2580,11 +2432,13 @@ button:disabled {
 }
 
 /* AccountView.vue — account applications */
+
 .account-tabs {
   display: flex;
   gap: 4px;
   margin: 0 0 12px;
 }
+
 .account-tabs button {
   border: 1px solid #dfe2e6;
   background: #fff;
@@ -2593,25 +2447,30 @@ button:disabled {
   padding: 9px 14px;
   font-size: 11px;
 }
+
 .account-tabs button.active {
   background: #111216;
   color: #fff;
 }
+
 .user-row .reject {
   background: #fff;
   color: #d8635d;
   border: 1px solid #d8635d;
   margin-left: 6px;
 }
+
 .empty-applications {
   text-align: center;
   padding: 45px;
   color: #929cab;
   font-size: 12px;
 }
+
 .account-tabs button.refresh-button {
   margin-left: auto;
 }
+
 .user-row button.delete-member {
   background: #d8635d;
   color: #fff;
@@ -2622,9 +2481,11 @@ button:disabled {
   font-weight: 600;
   cursor: pointer;
 }
+
 .user-row button.delete-member:hover {
   background: #bd4c46;
 }
+
 .user-row .role-select {
   width: 100%;
   max-width: 96px;
@@ -2646,25 +2507,31 @@ button:disabled {
 .members-table {
   overflow-x: auto;
 }
+
 .members-table .user-head,
 .members-table .user-row {
   grid-template-columns: 2fr 0.6fr 1fr 1fr 0.5fr 0.55fr;
   min-width: 900px;
 }
+
 .idle-modal {
   z-index: 30;
 }
+
 .idle-modal .material-modal {
   text-align: center;
 }
+
 .idle-modal .modal-actions {
   grid-template-columns: 1fr;
 }
+
 .idle-modal .modal-actions button {
   background: #111216;
   color: #fff;
   border-color: #111216;
 }
+
 .user-row strong.offline {
   color: #9aa3b0;
 }

@@ -10,7 +10,6 @@ from pathlib import Path
 from fastapi import Depends, Header, HTTPException
 from pwdlib import PasswordHash
 
-
 password_hash = PasswordHash.recommended()
 SECRET_FILE = Path(__file__).resolve().parent.parent / ".jwt_secret"
 

@@ -42,17 +42,25 @@ def is_online(member: dict[str, Any], now: datetime) -> bool:
 @router.get("")
 def list_members() -> list[dict[str, Any]]:
     fields = {
-        "name": 1, "email": 1, "role": 1,
-        "last_login_at": 1, "last_logout_at": 1, "last_seen_at": 1,
+        "name": 1,
+        "email": 1,
+        "role": 1,
+        "last_login_at": 1,
+        "last_logout_at": 1,
+        "last_seen_at": 1,
     }
     members = members_collection().find({}, fields).sort("created_at", -1)
     now = datetime.now(timezone.utc)
     return [
-        {"id": str(member["_id"]), "name": member.get("name", ""),
-         "email": member.get("email", ""), "role": member.get("role", "Medlem"),
-         "last_login_at": iso_utc(member.get("last_login_at")),
-         "last_logout_at": iso_utc(member.get("last_logout_at")),
-         "online": is_online(member, now)}
+        {
+            "id": str(member["_id"]),
+            "name": member.get("name", ""),
+            "email": member.get("email", ""),
+            "role": member.get("role", "Medlem"),
+            "last_login_at": iso_utc(member.get("last_login_at")),
+            "last_logout_at": iso_utc(member.get("last_logout_at")),
+            "online": is_online(member, now),
+        }
         for member in members
     ]
 

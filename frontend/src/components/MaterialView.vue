@@ -99,8 +99,8 @@ const submitDamageReport = async () => {
         <div class="material-name">
           <i>◇</i>
           <div>
-            <b>{{ material.name }}</b
-            ><small>{{ material.id }} · 2 lager</small>
+            <b>{{ material.name }}</b>
+            <small>{{ material.id }} · 2 lager</small>
           </div>
           <em>{{ material.tag }}</em>
         </div>
@@ -109,8 +109,8 @@ const submitDamageReport = async () => {
           >Fördelning per lager
           <strong
             >{{ material.qty }} <small>{{ material.unit }}</small></strong
-          ></label
-        >
+          >
+        </label>
         <p>
           ●　{{ material.a }} <b>{{ material.av }}</b>
         </p>
@@ -177,22 +177,23 @@ const submitDamageReport = async () => {
       <h2>Lägg till material</h2>
       <p>Registrera en ny artikel i ditt lager</p>
       <form @submit.prevent="showMaterialModal = false">
-        <label class="full">Namn<input placeholder="Ex. Kabeltrumma 25m" /></label
-        ><label>Artikelnummer<input placeholder="MAT-0000" /></label
-        ><label
+        <label class="full">Namn<input placeholder="Ex. Kabeltrumma 25m" /></label>
+        <label>Artikelnummer<input placeholder="MAT-0000" /></label>
+        <label
           >Kategori<select>
             <option>Förbrukning</option>
             <option>Elektronik</option>
             <option>Utrustning</option>
           </select></label
-        ><label>Lager<input placeholder="Ex. Lager A" /></label
-        ><label>Sektion<input placeholder="Ex. Sektion 1" /></label
-        ><label>Antal<input type="number" placeholder="0" /></label
-        ><label>Enhet<input placeholder="st, par" /></label
-        ><label>Skadade<input type="number" placeholder="0" /></label>
+        >
+        <label>Lager<input placeholder="Ex. Lager A" /></label>
+        <label>Sektion<input placeholder="Ex. Sektion 1" /></label>
+        <label>Antal<input type="number" placeholder="0" /></label>
+        <label>Enhet<input placeholder="st, par" /></label>
+        <label>Skadade<input type="number" placeholder="0" /></label>
         <div class="modal-actions">
-          <button type="button" @click="showMaterialModal = false">Avbryt</button
-          ><button type="submit">Spara material</button>
+          <button type="button" @click="showMaterialModal = false">Avbryt</button>
+          <button type="submit">Spara material</button>
         </div>
       </form>
     </div>

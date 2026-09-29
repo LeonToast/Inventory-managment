@@ -27,9 +27,11 @@ def create_account_application(application: AccountApplication) -> dict[str, Any
 
 @router.get("", response_model=list[ApplicationResponse], dependencies=[Depends(require_admin)])
 def list_account_applications() -> list[dict[str, Any]]:
-    documents = applications_collection().find(
-        {"status": "pending"}, {"name": 1, "email": 1, "status": 1, "submitted_at": 1}
-    ).sort("submitted_at", -1)
+    documents = (
+        applications_collection()
+        .find({"status": "pending"}, {"name": 1, "email": 1, "status": 1, "submitted_at": 1})
+        .sort("submitted_at", -1)
+    )
     return [{**document, "id": str(document.pop("_id"))} for document in documents]
 
 
@@ -45,11 +47,15 @@ def validate_account_application(application_id: str) -> dict[str, str]:
     if not application:
         raise HTTPException(status_code=404, detail="Application not found")
     try:
-        members_collection().insert_one({
-            "name": application["name"], "email": application["email"],
-            "password_hash": application["password_hash"], "role": "Medlem",
-            "created_at": datetime.now(timezone.utc),
-        })
+        members_collection().insert_one(
+            {
+                "name": application["name"],
+                "email": application["email"],
+                "password_hash": application["password_hash"],
+                "role": "Medlem",
+                "created_at": datetime.now(timezone.utc),
+            }
+        )
     except Exception:
         applications_collection().update_one(
             {"_id": application["_id"]},

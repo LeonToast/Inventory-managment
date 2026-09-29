@@ -8,7 +8,6 @@ from fastapi.testclient import TestClient
 from backend.workspace.main import app
 from backend.workspace.security import issue_token, password_hash
 
-
 AUTH_MEMBERS = "backend.workspace.routers.auth.members_collection"
 MEMBERS_MEMBERS = "backend.workspace.routers.members.members_collection"
 
@@ -43,7 +42,10 @@ class FakeMembers:
 class SessionTimestampTests(unittest.TestCase):
     def setUp(self):
         self.member = {
-            "_id": "1", "name": "Mia", "email": "mia@example.com", "role": "Medlem",
+            "_id": "1",
+            "name": "Mia",
+            "email": "mia@example.com",
+            "role": "Medlem",
             "password_hash": password_hash.hash("hemligt123"),
         }
         self.members = FakeMembers(self.member)
