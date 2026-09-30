@@ -17,7 +17,7 @@ async def list_members() -> list[dict[str, str]]:
         members = client["inventory-manager"]["Medlem"].find({}, {"name": 1, "email": 1, "role": 1}).sort("created_at", -1)
         return [
             {"id": str(member["_id"]), "name": member.get("name", ""),
-             "email": member.get("email", ""), "role": member.get("role", "Medlem")}
+             "email": member.get("email", ""), "role": "Worker" if member.get("role") in {"Medlem", "Worker"} else member.get("role", "Worker")}
             for member in members
         ]
     finally:

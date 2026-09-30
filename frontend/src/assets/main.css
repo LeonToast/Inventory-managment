@@ -35,16 +35,21 @@ body {
 
 .app {
   display: flex;
-  min-height: 100vh
+  min-height: 100vh;
+  align-items: flex-start
 }
 
 aside {
+  position: sticky;
+  top: 0;
   width: 232px;
+  height: 100vh;
   flex: none;
   background: #111216;
   color: #aeb1ba;
   display: flex;
-  flex-direction: column
+  flex-direction: column;
+  overflow: hidden
 }
 
 .brand {
@@ -66,8 +71,14 @@ aside {
 
 .menu {
   padding: 22px 12px;
-  flex: 1
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain
 }
+
+.menu::-webkit-scrollbar { width: 5px }
+.menu::-webkit-scrollbar-thumb { background: #45474d; border-radius: 5px }
 
 .menu>small {
   margin: 0 12px;
@@ -139,13 +150,25 @@ aside {
   flex: 1
 }
 
+.user-photo {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover
+}
+
 main {
   flex: 1;
   min-width: 0
 }
 
 header {
+  position: sticky;
+  top: 0;
+  z-index: 5;
   height: 72px;
+  min-height: 72px;
   background: #fff;
   border: 1px solid #d9dce1;
   display: flex;
@@ -156,6 +179,74 @@ header {
   font-size: 12px
 }
 
+.header-tools {
+  display: flex;
+  align-items: center;
+  gap: 18px
+}
+
+.account-menu { position: relative }
+
+.account-trigger {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 7px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #15171b;
+  cursor: pointer
+}
+
+.account-trigger:focus-visible,
+.account-dropdown button:focus-visible {
+  outline: 2px solid #53796c;
+  outline-offset: 2px
+}
+
+.account-name { font-weight: 600 }
+.account-chevron { color: #77808d; font-size: 13px }
+
+.account-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  z-index: 20;
+  width: 220px;
+  padding: 7px;
+  border: 1px solid #dfe2e6;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 12px 30px #11121620
+}
+
+.account-email {
+  display: block;
+  overflow: hidden;
+  padding: 8px 10px;
+  border-bottom: 1px solid #e9ebee;
+  color: #77808d;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap
+}
+
+.account-dropdown button {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: #25292e;
+  text-align: left;
+  font: inherit;
+  cursor: pointer
+}
+
+.account-dropdown button:hover { background: #f1f3f4 }
+
 .crumb strong,
 header b {
   color: #15171b
@@ -165,6 +256,11 @@ header b {
   display: inline-grid;
   width: 28px;
   height: 28px
+}
+
+.profile-avatar {
+  object-fit: cover;
+  vertical-align: middle
 }
 
 .crumb {
@@ -478,12 +574,17 @@ a {
   }
 
   .brand strong,
-  .menu,
   .user b,
   .user>span+b,
   .user {
     font-size: 0
   }
+
+  .menu { padding: 16px 8px }
+  .menu>small { display: none }
+  .menu button { justify-content: center; padding: 0; font-size: 0 }
+  .menu button i { font-size: 17px }
+  .menu em { display: none }
 
   .user {
     padding: 0;
@@ -505,8 +606,13 @@ a {
 
 @media(max-width:560px) {
   header {
-    padding: 0 16px
+    padding: 0 10px
   }
+
+  .header-tools { gap: 5px }
+  .header-time { display: none }
+  .account-trigger { gap: 5px; padding: 4px }
+  .account-name { max-width: 86px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
 
   .crumb {
     font-size: 0
@@ -584,10 +690,11 @@ a {
 }
 
 .material-toolbar {
-  height: 82px;
+  min-height: 82px;
   padding: 20px;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 14px;
   background: #fff;
   border: 1px solid #dfe2e6;
@@ -597,6 +704,7 @@ a {
 }
 
 .search {
+  min-width: 210px;
   height: 40px;
   border: 1px solid #dfe2e6;
   border-radius: 7px;
@@ -608,8 +716,23 @@ a {
   font-size: 12px
 }
 
+.search input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit
+}
+
+.search input::placeholder { color: #99a3b2 }
+
 .material-toolbar nav {
   display: flex;
+  max-width: 100%;
+  overflow-x: auto;
   background: #f4f5f7;
   border-radius: 8px;
   padding: 4px;
@@ -617,15 +740,39 @@ a {
 }
 
 .material-toolbar nav>* {
-  padding: 9px 14px;
-  font-weight: 400
+  flex: none;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #718096;
+  font: inherit;
+  cursor: pointer
 }
 
-.material-toolbar nav b {
+.material-toolbar nav button.selected {
   background: #fff;
-  border-radius: 6px;
   color: #44516a;
   box-shadow: 0 1px 3px #0001
+}
+
+.material-status-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  white-space: nowrap
+}
+
+.material-status-filter select {
+  height: 40px;
+  max-width: 150px;
+  padding: 0 10px;
+  border: 1px solid #dfe2e6;
+  border-radius: 7px;
+  background: #fff;
+  color: #526079;
+  font: inherit
 }
 
 .material-toolbar button {
@@ -1116,6 +1263,26 @@ button{transition:background-color .15s ease,color .15s ease,border-color .15s e
 
 .signup-card input.invalid{border:1px solid #d85c5c;background:#fff7f7}.signup-errors{color:#c94f4f;font-size:8px;line-height:1.4;margin-top:2px}
 
+.signup-card .two-factor-choice{display:flex;align-items:center;gap:7px;font-size:9px}
+.signup-card .two-factor-choice input{display:inline-block;width:14px;height:14px;margin:0;accent-color:#38574c}
+.two-factor-enrollment{display:grid;gap:9px;padding:10px;border:1px solid #dfe2e6;border-radius:7px;background:#f8faf9}
+.two-factor-setup-button,.two-factor-back{min-height:30px;border:1px solid #dfe2e6;border-radius:6px;background:#fff;color:#34473f;font-size:9px;cursor:pointer}
+.two-factor-secret{display:grid;gap:8px}
+.two-factor-secret p{margin:0;color:#5c6873;font-size:9px;line-height:1.4}
+.two-factor-secret code{overflow-wrap:anywhere;padding:7px;border-radius:5px;background:#edf1ef;color:#263d37;font-size:11px;text-align:center;user-select:all}
+.two-factor-qr{display:block;width:190px;height:190px;max-width:100%;margin:0 auto;padding:5px;border-radius:5px;background:#fff;image-rendering:pixelated}
+.two-factor-secret details{display:grid;gap:7px}
+.two-factor-secret summary{color:#536075;font-size:9px;cursor:pointer}
+.signup-card .two-factor-secret label{display:block}
+.signup-card .two-factor-secret input{font-size:12px;text-align:center;letter-spacing:2px}
+.login-card .two-factor-back{width:100%;height:30px;margin-top:5px}
+.signup-card{max-height:90vh;overflow-y:auto}
+:root[data-theme='dark'] .two-factor-enrollment{background:#1b2122;border-color:#3b4646}
+:root[data-theme='dark'] .two-factor-setup-button,:root[data-theme='dark'] .two-factor-back{background:#222829;border-color:#465252;color:#e9efec}
+:root[data-theme='dark'] .two-factor-secret p{color:#c4cfca}
+:root[data-theme='dark'] .two-factor-secret summary{color:#c4cfca}
+:root[data-theme='dark'] .two-factor-secret code{background:#34403e;color:#f0f4f2}
+
 
 /* LandingView.vue — registration confirmation */
 .pending-backdrop{position:fixed;inset:0;background:#fff9;display:grid;place-items:center;z-index:22}.pending-card{width:320px;background:#fff;border-radius:15px;padding:30px;text-align:center;box-shadow:0 15px 45px #0002}.pending-icon{width:42px;height:42px;margin:0 auto 14px;background:#e8f7ed;color:#4ca375;border-radius:50%;display:grid;place-items:center;font-size:22px}.pending-card h2{margin:0 0 8px;font-size:18px}.pending-card p{margin:0 0 22px;color:#7d8794;font-size:11px}.pending-card button{width:100%;height:38px;border:0;border-radius:7px;background:#111216;color:#fff;font-weight:700;font-size:11px}
@@ -1128,4 +1295,656 @@ button{transition:background-color .15s ease,color .15s ease,border-color .15s e
 
 
 .login-error{margin:0;color:#c94f4f;font-size:8px;text-align:center}
+
+:root {
+  --settings-surface: #fff;
+  --settings-text: #17191c;
+  --settings-muted: #77808d;
+  --settings-border: #dfe2e6;
+  --settings-field: #fff;
+}
+
+:root[data-theme='dark'] {
+  --settings-surface: #222829;
+  --settings-text: #e9efec;
+  --settings-muted: #a3afab;
+  --settings-border: #3b4646;
+  --settings-field: #1b2122;
+}
+
+:root[data-theme='dark'] body { background: #171b1c; color: #e9efec }
+:root[data-theme='dark'] .app { background: #171b1c }
+:root[data-theme='dark'] header,
+:root[data-theme='dark'] .stats article,
+:root[data-theme='dark'] .card,
+:root[data-theme='dark'] .material-card,
+:root[data-theme='dark'] .delivery-stats article,
+:root[data-theme='dark'] .delivery-filter,
+:root[data-theme='dark'] .delivery-table,
+:root[data-theme='dark'] .account-stats article,
+:root[data-theme='dark'] .account-filter,
+:root[data-theme='dark'] .user-table,
+:root[data-theme='dark'] .reports-toolbar,
+:root[data-theme='dark'] .announcement,
+:root[data-theme='dark'] .form-card,
+:root[data-theme='dark'] .material-modal,
+:root[data-theme='dark'] .delivery-modal,
+:root[data-theme='dark'] .account-modal,
+:root[data-theme='dark'] .signup-card,
+:root[data-theme='dark'] .login-card,
+:root[data-theme='dark'] .pending-card {
+  background: #222829;
+  border-color: #3b4646;
+  color: #e9efec
+}
+
+:root[data-theme='dark'] header b,
+:root[data-theme='dark'] .crumb strong,
+:root[data-theme='dark'] .material-name b,
+:root[data-theme='dark'] .user-table>header b,
+:root[data-theme='dark'] .announcement h2,
+:root[data-theme='dark'] .signup-card footer b {
+  color: #e9efec
+}
+
+:root[data-theme='dark'] .menu button.on { background: #34403e; color: #f4f7f5 }
+:root[data-theme='dark'] .menu button:not(.on):hover { background: #222829 }
+:root[data-theme='dark'] .account-trigger { color: #e9efec }
+:root[data-theme='dark'] .account-chevron { color: #a3afab }
+:root[data-theme='dark'] .account-dropdown { background: #222829; border-color: #3b4646 }
+:root[data-theme='dark'] .account-email { border-color: #3b4646; color: #a3afab }
+:root[data-theme='dark'] .account-dropdown button { color: #e9efec }
+:root[data-theme='dark'] .account-dropdown button:hover { background: #34403e }
+:root[data-theme='dark'] .material-toolbar nav { background: #1b2122 }
+:root[data-theme='dark'] .material-toolbar nav button.selected { background: #34403e; color: #f4f7f5 }
+:root[data-theme='dark'] .material-status-filter select { background: #1b2122; border-color: #465252; color: #e9efec }
+:root[data-theme='dark'] .user-table>header,
+:root[data-theme='dark'] .user-head,
+:root[data-theme='dark'] .user-row,
+:root[data-theme='dark'] .delivery-row,
+:root[data-theme='dark'] .material-card hr { border-color: #3b4646 }
+:root[data-theme='dark'] input,
+:root[data-theme='dark'] select,
+:root[data-theme='dark'] textarea,
+:root[data-theme='dark'] .account-tabs button,
+:root[data-theme='dark'] .user-row .role-select {
+  background: #1b2122;
+  border-color: #465252;
+  color: #e9efec
+}
+:root[data-theme='dark'] .account-filter nav,
+:root[data-theme='dark'] .reports-toolbar nav { background: #1b2122 }
+:root[data-theme='dark'] .account-filter nav b,
+:root[data-theme='dark'] .reports-toolbar nav b { background: #34403e; color: #f4f7f5 }
+:root[data-theme='dark'] .login-backdrop,
+:root[data-theme='dark'] .signup-backdrop,
+:root[data-theme='dark'] .pending-backdrop { background: #080b0bc9 }
+:root[data-theme='dark'] .landing-page { background: #171b1c; color: #e9efec }
+:root[data-theme='dark'] .landing-main {
+  background: radial-gradient(ellipse at 50% 0%, #303b3a 0%, #202827 48%, #171b1c 100%);
+  color: #f0f4f2
+}
+:root[data-theme='dark'] .landing-main>p,
+:root[data-theme='dark'] .landing-features p { color: #b1bcb8 }
+:root[data-theme='dark'] .landing-actions .secondary { border-color: #aebbb6; color: #eef3f0 }
+:root[data-theme='dark'] .landing-features { border-color: #3b4646 }
+:root[data-theme='dark'] .login-card input,
+:root[data-theme='dark'] .signup-card input { background: #1b2122; color: #e9efec }
+
+:root[data-theme='dark'] {
+  --dark-canvas: #151a19;
+  --dark-surface: #202725;
+  --dark-surface-raised: #29312e;
+  --dark-field: #171e1c;
+  --dark-border: #3b4641;
+  --dark-text: #e7eeea;
+  --dark-muted: #bac5bf;
+  --dark-subtle: #98a69f;
+  --dark-hover: #303a35;
+  --dark-accent: #527361;
+}
+
+:root[data-theme='dark'] body,
+:root[data-theme='dark'] .app {
+  background: var(--dark-canvas);
+  color: var(--dark-text)
+}
+
+:root[data-theme='dark'] .app main { color: var(--dark-text) }
+
+:root[data-theme='dark'] .app main>header,
+:root[data-theme='dark'] .app main .stats article,
+:root[data-theme='dark'] .app main .card,
+:root[data-theme='dark'] .app main .material-toolbar,
+:root[data-theme='dark'] .app main .material-card,
+:root[data-theme='dark'] .app main .delivery-stats article,
+:root[data-theme='dark'] .app main .delivery-filter,
+:root[data-theme='dark'] .app main .delivery-table,
+:root[data-theme='dark'] .app main .account-stats article,
+:root[data-theme='dark'] .app main .account-filter,
+:root[data-theme='dark'] .app main .user-table,
+:root[data-theme='dark'] .app main .reports-toolbar,
+:root[data-theme='dark'] .app main .announcement,
+:root[data-theme='dark'] .app main .form-card,
+:root[data-theme='dark'] .modal-backdrop .material-modal,
+:root[data-theme='dark'] .modal-backdrop .delivery-modal,
+:root[data-theme='dark'] .modal-backdrop .account-modal {
+  background: var(--dark-surface);
+  border-color: var(--dark-border);
+  color: var(--dark-text)
+}
+
+:root[data-theme='dark'] .app main h1,
+:root[data-theme='dark'] .app main h2,
+:root[data-theme='dark'] .app main h3,
+:root[data-theme='dark'] .app main .stats b,
+:root[data-theme='dark'] .app main .title b,
+:root[data-theme='dark'] .app main .row div b,
+:root[data-theme='dark'] .app main .overview b,
+:root[data-theme='dark'] .app main .capacity>b,
+:root[data-theme='dark'] .app main .material-name b,
+:root[data-theme='dark'] .app main .material-card label strong,
+:root[data-theme='dark'] .app main .delivery-table header b,
+:root[data-theme='dark'] .app main .supplier b,
+:root[data-theme='dark'] .app main .user-table>header b,
+:root[data-theme='dark'] .app main .person b,
+:root[data-theme='dark'] .app main .announcement h2,
+:root[data-theme='dark'] .app main .form-heading h1 {
+  color: var(--dark-text)
+}
+
+:root[data-theme='dark'] .app main .intro p,
+:root[data-theme='dark'] .app main .intro>span,
+:root[data-theme='dark'] .app main .stats small,
+:root[data-theme='dark'] .app main .stats span,
+:root[data-theme='dark'] .app main .row small,
+:root[data-theme='dark'] .app main .row time,
+:root[data-theme='dark'] .app main .overview small,
+:root[data-theme='dark'] .app main .capacity,
+:root[data-theme='dark'] .app main .capacity>small,
+:root[data-theme='dark'] .app main .material-heading span,
+:root[data-theme='dark'] .app main .material-name small,
+:root[data-theme='dark'] .app main .material-card label,
+:root[data-theme='dark'] .app main .material-card label strong small,
+:root[data-theme='dark'] .app main .material-card p,
+:root[data-theme='dark'] .app main .delivery-intro p,
+:root[data-theme='dark'] .app main .delivery-stats small,
+:root[data-theme='dark'] .app main .delivery-stats span,
+:root[data-theme='dark'] .app main .delivery-table>header,
+:root[data-theme='dark'] .app main .delivery-table header small,
+:root[data-theme='dark'] .app main .table-head,
+:root[data-theme='dark'] .app main .delivery-row,
+:root[data-theme='dark'] .app main .supplier small,
+:root[data-theme='dark'] .app main .account-intro p,
+:root[data-theme='dark'] .app main .account-stats small,
+:root[data-theme='dark'] .app main .account-stats span,
+:root[data-theme='dark'] .app main .account-filter,
+:root[data-theme='dark'] .app main .user-table>header,
+:root[data-theme='dark'] .app main .user-head,
+:root[data-theme='dark'] .app main .user-row,
+:root[data-theme='dark'] .app main .person small,
+:root[data-theme='dark'] .app main .reports-intro p,
+:root[data-theme='dark'] .app main .reports-heading span,
+:root[data-theme='dark'] .app main .announcement time,
+:root[data-theme='dark'] .app main .announcement p,
+:root[data-theme='dark'] .app main .form-heading p,
+:root[data-theme='dark'] .app main .form-card label {
+  color: var(--dark-muted)
+}
+
+:root[data-theme='dark'] .app main .material-name em,
+:root[data-theme='dark'] .app main .table-head,
+:root[data-theme='dark'] .app main .user-head,
+:root[data-theme='dark'] .app main .reports-toolbar nav,
+:root[data-theme='dark'] .app main .account-filter nav {
+  background: var(--dark-surface-raised);
+  color: var(--dark-muted)
+}
+
+:root[data-theme='dark'] .app main .material-card hr,
+:root[data-theme='dark'] .app main .material-card footer,
+:root[data-theme='dark'] .app main .delivery-table>header,
+:root[data-theme='dark'] .app main .table-head,
+:root[data-theme='dark'] .app main .delivery-row,
+:root[data-theme='dark'] .app main .user-table>header,
+:root[data-theme='dark'] .app main .user-head,
+:root[data-theme='dark'] .app main .user-row,
+:root[data-theme='dark'] .app main .account-tabs,
+:root[data-theme='dark'] .app main .settings-content,
+:root[data-theme='dark'] .app main .settings-group {
+  border-color: var(--dark-border)
+}
+
+:root[data-theme='dark'] .app main input,
+:root[data-theme='dark'] .app main select,
+:root[data-theme='dark'] .app main textarea,
+:root[data-theme='dark'] .app main .search,
+:root[data-theme='dark'] .app main .account-filter>div,
+:root[data-theme='dark'] .app main .reports-toolbar>div,
+:root[data-theme='dark'] .material-modal input,
+:root[data-theme='dark'] .material-modal select,
+:root[data-theme='dark'] .delivery-modal input,
+:root[data-theme='dark'] .delivery-modal select,
+:root[data-theme='dark'] .account-modal input,
+:root[data-theme='dark'] .account-modal select {
+  background-color: var(--dark-field);
+  border-color: var(--dark-border);
+  color: var(--dark-text)
+}
+
+:root[data-theme='dark'] .app main input::placeholder,
+:root[data-theme='dark'] .app main textarea::placeholder,
+:root[data-theme='dark'] .app main .search input::placeholder {
+  color: var(--dark-subtle)
+}
+
+:root[data-theme='dark'] .app main .material-toolbar nav,
+:root[data-theme='dark'] .app main .delivery-filter nav,
+:root[data-theme='dark'] .app main .reports-toolbar nav,
+:root[data-theme='dark'] .app main .account-filter nav {
+  background: var(--dark-field)
+}
+
+:root[data-theme='dark'] .app main .material-toolbar nav .selected,
+:root[data-theme='dark'] .app main .delivery-filter nav b,
+:root[data-theme='dark'] .app main .reports-toolbar nav b,
+:root[data-theme='dark'] .app main .account-filter nav b {
+  background: var(--dark-hover);
+  color: var(--dark-text);
+  box-shadow: none
+}
+
+:root[data-theme='dark'] .app main .material-name>i,
+:root[data-theme='dark'] .app main .supplier>i,
+:root[data-theme='dark'] .app main .row>i.blue,
+:root[data-theme='dark'] .app main .announcement .blue,
+:root[data-theme='dark'] .app main .delivery-row .blue,
+:root[data-theme='dark'] .app main .tag.blue {
+  background: #26364a;
+  color: #bfd2f5
+}
+
+:root[data-theme='dark'] .app main .row>i.green,
+:root[data-theme='dark'] .app main .announcement .green,
+:root[data-theme='dark'] .app main .tag.green,
+:root[data-theme='dark'] .app main .delivery-row .green,
+:root[data-theme='dark'] .app main .delivery-stats em.green {
+  background: #24372d;
+  color: #acd9b9
+}
+
+:root[data-theme='dark'] .app main .row>i.amber,
+:root[data-theme='dark'] .app main .announcement .amber,
+:root[data-theme='dark'] .app main .tag.amber,
+:root[data-theme='dark'] .app main .delivery-row .amber,
+:root[data-theme='dark'] .app main .delivery-stats em.amber {
+  background: #3d3423;
+  color: #e5c47d
+}
+
+:root[data-theme='dark'] .app main .announcement .purple,
+:root[data-theme='dark'] .app main .tag.purple {
+  background: #342c43;
+  color: #c8b8ed
+}
+
+:root[data-theme='dark'] .app main .delivery-row .gray,
+:root[data-theme='dark'] .app main .tag.gray {
+  background: #303735;
+  color: #c3ccc7
+}
+
+:root[data-theme='dark'] .app main .material-card footer,
+:root[data-theme='dark'] .app main .material-card footer b {
+  color: #d5b67a
+}
+
+:root[data-theme='dark'] .app main .account-tabs button,
+:root[data-theme='dark'] .app main .modal-actions button:first-child {
+  background: var(--dark-surface-raised);
+  border-color: var(--dark-border);
+  color: var(--dark-text)
+}
+
+:root[data-theme='dark'] .app main .stats em {
+  background: #24372d;
+  color: #acd9b9
+}
+
+:root[data-theme='dark'] .app .help {
+  background: var(--dark-surface);
+  border-color: var(--dark-border);
+  color: #bfd2f5
+}
+
+:root[data-theme='dark'] .app main .reports-intro button,
+:root[data-theme='dark'] .app main .delivery-intro button,
+:root[data-theme='dark'] .app main .account-filter button,
+:root[data-theme='dark'] .app main .primary,
+:root[data-theme='dark'] .app main .account-submit,
+:root[data-theme='dark'] .app main .modal-actions button:last-child {
+  background: var(--dark-accent);
+  border-color: var(--dark-accent);
+  color: #fff
+}
+
+:root[data-theme='dark'] .app main .announcement.featured {
+  border-color: #536c5e;
+  box-shadow: none
+}
+
+:root[data-theme='dark'] .app main .checks span {
+  background: #26364a;
+  color: #bfd2f5
+}
+
+.reports-toolbar {
+  height: auto;
+  min-height: 82px;
+  flex-wrap: wrap
+}
+
+.reports-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 210px;
+  height: 40px;
+  flex: 1;
+  padding: 0 12px;
+  border: 1px solid #dfe2e6;
+  border-radius: 7px;
+  color: #8993a1;
+  font-size: 12px
+}
+
+.reports-search input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit
+}
+
+.reports-search input::placeholder { color: #99a3b2 }
+
+.reports-toolbar nav {
+  max-width: 100%;
+  overflow-x: auto
+}
+
+.reports-toolbar nav button {
+  flex: none;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer
+}
+
+.reports-toolbar nav button.selected {
+  background: #fff;
+  color: #44516a;
+  box-shadow: 0 1px 3px #0001
+}
+
+.reports-toolbar nav button:focus-visible,
+.reports-search input:focus-visible {
+  outline: 2px solid #53796c;
+  outline-offset: 2px
+}
+
+:root[data-theme='dark'] .app main .reports-search {
+  background: var(--dark-field);
+  border-color: var(--dark-border);
+  color: var(--dark-muted)
+}
+
+:root[data-theme='dark'] .app main .reports-search input {
+  background: transparent;
+  color: var(--dark-text)
+}
+
+:root[data-theme='dark'] .app main .reports-toolbar nav button.selected {
+  background: var(--dark-hover);
+  color: var(--dark-text);
+  box-shadow: none
+}
+
+:root[data-theme='dark'] .app main .reports-empty { color: var(--dark-muted) }
+
+@media (max-width: 560px) {
+  .reports-page { padding: 24px 12px }
+  .reports-toolbar { padding: 12px }
+  .reports-search { min-width: 100% }
+}
+
+.login-history-table { overflow-x: auto }
+
+.login-history-head,
+.login-history-row {
+  display: grid;
+  grid-template-columns: minmax(130px, 1.1fr) minmax(200px, 1.7fr) minmax(100px, .7fr) minmax(170px, 1fr);
+  gap: 18px;
+  align-items: center;
+  min-width: 720px;
+  padding: 0 20px
+}
+
+.login-history-head {
+  height: 36px;
+  border-bottom: 1px solid #edf0f2;
+  color: #8995a5;
+  font-size: 9px;
+  letter-spacing: 1px
+}
+
+.login-history-row {
+  min-height: 58px;
+  border-bottom: 1px solid #edf0f2;
+  color: #536a8d;
+  font-size: 11px
+}
+
+.login-history-row:last-child { border-bottom: 0 }
+.login-history-row b { color: #17212e }
+.login-history-row time { color: #77869a; font-variant-numeric: tabular-nums }
+
+:root[data-theme='dark'] .app main .login-history-head,
+:root[data-theme='dark'] .app main .login-history-row {
+  border-color: var(--dark-border);
+  color: var(--dark-muted)
+}
+
+:root[data-theme='dark'] .app main .login-history-row b { color: var(--dark-text) }
+:root[data-theme='dark'] .app main .login-history-row time { color: var(--dark-muted) }
+
+.delivery-page .delivery-filter {
+  height: auto;
+  min-height: 68px;
+  flex-wrap: wrap
+}
+
+.delivery-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 220px;
+  height: 40px;
+  flex: 1;
+  padding: 0 12px;
+  border: 1px solid #dfe2e6;
+  border-radius: 7px;
+  color: #8993a1
+}
+
+.delivery-search input {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit
+}
+
+.delivery-search input::placeholder { color: #99a3b2 }
+
+.delivery-status-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap
+}
+
+.delivery-status-filter select {
+  height: 40px;
+  padding: 0 10px;
+  border: 1px solid #dfe2e6;
+  border-radius: 7px;
+  background: #fff;
+  color: #526079;
+  font: inherit
+}
+
+.delivery-empty {
+  padding: 30px 20px;
+  color: #77869a;
+  font-size: 12px
+}
+
+.delivery-modal .shipment-form-error { grid-column: 1 / -1; margin: -8px 0 0; color: #b5453d; font-size: 10px; line-height: 1.45 }
+.delivery-row { height: auto; min-height: 64px; padding-top: 9px; padding-bottom: 9px }
+.shipment-sku { display: block; margin-top: 3px; color: #8f9aaa; font-size: 9px }
+.delivery-message { margin: 0 0 14px; padding: 10px 13px; border-radius: 6px; font-size: 11px }
+.delivery-success { background: #e8f7ed; color: #32764b }
+.delivery-error { background: #fff1ef; color: #ae3e36 }
+.delivery-modal .shipment-stock-note { grid-column: 1 / -1; margin: -6px 0 0; color: #617169; font-size: 10px; line-height: 1.5 }
+
+:root[data-theme='dark'] .app main .delivery-search,
+:root[data-theme='dark'] .app main .delivery-status-filter select {
+  background: var(--dark-field);
+  border-color: var(--dark-border);
+  color: var(--dark-text)
+}
+
+:root[data-theme='dark'] .app main .delivery-search input { background: transparent; color: var(--dark-text) }
+:root[data-theme='dark'] .app main .delivery-search input::placeholder { color: var(--dark-subtle) }
+:root[data-theme='dark'] .app main .delivery-empty,
+:root[data-theme='dark'] .delivery-modal .shipment-stock-note { color: var(--dark-muted) }
+:root[data-theme='dark'] .delivery-modal .shipment-form-error { color: #efb2aa }
+:root[data-theme='dark'] .delivery-success { background: #24372d; color: #acd9b9 }
+:root[data-theme='dark'] .delivery-error { background: #402b2a; color: #efb2aa }
+
+.activity-refresh { border: 0; background: transparent; color: #738196; font: inherit; font-size: 10px; cursor: pointer }
+.activity-row { width: 100%; padding: 0; border: 0; background: transparent; color: inherit; text-align: left; font: inherit; cursor: pointer }
+.activity-row:hover { background: #f7f9f8 }
+.activity-row:focus-visible { outline: 2px solid #53796c; outline-offset: -2px }
+.activity-copy { flex: 1; min-width: 0 }
+.activity-copy small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.activity-chevron { color: #8993a1; font-size: 17px }
+.activity-state { padding: 22px 20px; color: #77808d; font-size: 11px }
+.activity-error { color: #ae3e36 }
+.activity-details-backdrop { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 18px; background: #11121688 }
+.activity-details { position: relative; width: min(500px, 100%); max-height: 90vh; overflow-y: auto; padding: 28px; border: 1px solid #dfe2e6; border-radius: 9px; background: #fff; color: #202725; box-shadow: 0 18px 50px #0003 }
+.activity-details-close { position: absolute; top: 12px; right: 14px; border: 0; background: transparent; color: #77808d; font-size: 22px; cursor: pointer }
+.activity-detail-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 7px; font-style: normal; font-size: 18px }
+.activity-detail-type { margin: 17px 0 4px; color: #77808d; font-size: 10px; text-transform: uppercase }
+.activity-details h2 { margin: 0; color: #202725; font-size: 20px }
+.activity-detail-description { margin: 7px 0 20px; color: #64746c; font-size: 12px }
+.activity-details dl { display: grid; gap: 0; margin: 0 }
+.activity-details dl>div { display: grid; grid-template-columns: 125px minmax(0, 1fr); gap: 12px; padding: 10px 0; border-top: 1px solid #edf0ee }
+.activity-details dt { color: #77808d; font-size: 11px }
+.activity-details dd { margin: 0; color: #202725; font-size: 11px; overflow-wrap: anywhere }
+:root[data-theme='dark'] .app main .activity-refresh { color: var(--dark-muted) }
+:root[data-theme='dark'] .app main .activity-row:hover { background: var(--dark-surface-raised) }
+:root[data-theme='dark'] .app main .activity-row .activity-copy b { color: var(--dark-text) }
+:root[data-theme='dark'] .app main .activity-chevron,
+:root[data-theme='dark'] .app main .activity-state { color: var(--dark-muted) }
+:root[data-theme='dark'] .app main .activity-error { color: #efb2aa }
+:root[data-theme='dark'] .activity-details { border-color: var(--dark-border); background: var(--dark-surface); color: var(--dark-text) }
+:root[data-theme='dark'] .activity-details h2,
+:root[data-theme='dark'] .activity-details dd { color: var(--dark-text) }
+:root[data-theme='dark'] .activity-detail-type,
+:root[data-theme='dark'] .activity-detail-description,
+:root[data-theme='dark'] .activity-details dt { color: var(--dark-muted) }
+:root[data-theme='dark'] .activity-details dl>div { border-color: var(--dark-border) }
+
+@media (max-width: 800px) {
+  .delivery-page { padding: 24px 16px }
+  .delivery-row,
+  .table-head { grid-template-columns: minmax(150px, 1.5fr) minmax(130px, 1.2fr) minmax(100px, .8fr) minmax(145px, 1fr) minmax(90px, .7fr); min-width: 760px }
+  .delivery-table { overflow-x: auto }
+}
+
+@media (max-width: 560px) {
+  .delivery-page { padding: 24px 12px }
+  .delivery-search { min-width: 100% }
+  .delivery-status-filter { width: 100%; justify-content: space-between }
+  .delivery-modal { width: min(480px, calc(100vw - 24px)); max-height: 90vh; overflow-y: auto }
+}
+
+.delivery-actions { display: grid; justify-items: start; gap: 5px }
+.receipt-open-button { padding: 2px 0; border: 0; background: transparent; color: #4778df; font-size: 10px; cursor: pointer }
+.shipment-action-button,.shipment-cancel-button { min-height: 24px; padding: 2px 7px; border: 1px solid transparent; border-radius: 5px; font-size: 9px; white-space: nowrap; cursor: pointer }
+.shipment-action-button { border-color: #b8d9c3; background: #e8f7ed; color: #32764b }
+.shipment-cancel-button { border-color: #efc5c0; background: #fff1ef; color: #ae3e36 }
+.receipt-backdrop { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; overflow-y: auto; padding: 20px; background: #111216b8 }
+.receipt-modal { width: min(480px, 100%); padding: 30px; border: 1px solid #dfe2e6; border-radius: 10px; background: #fff; color: #202725; box-shadow: 0 18px 50px #0003 }
+.receipt-brand { display: flex; align-items: center; gap: 9px; color: #263d37; font-size: 14px }
+.receipt-brand span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 6px; background: #263d37; color: #fff }
+.receipt-eyebrow { margin: 26px 0 5px; color: #718078; font-size: 9px; font-weight: 700; letter-spacing: 1px }
+.receipt-modal h2 { margin: 0; color: #1d2823; font-size: 24px }
+.receipt-number { margin: 5px 0 20px; color: #64746c; font-size: 12px; font-variant-numeric: tabular-nums }
+.receipt-rule { height: 1px; background: #dfe5e1 }
+.receipt-details { display: grid; gap: 0; margin: 8px 0 }
+.receipt-details>div { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 14px; padding: 11px 0; border-bottom: 1px solid #edf0ee }
+.receipt-details dt { color: #728078; font-size: 11px }
+.receipt-details dd { margin: 0; color: #202725; font-size: 12px; font-weight: 600; overflow-wrap: anywhere }
+.receipt-details dd small { display: block; margin-top: 3px; color: #7c8982; font-size: 10px; font-weight: 400 }
+.receipt-status { color: #32764b }
+.receipt-footer { margin: 18px 0 0; color: #758179; font-size: 10px }
+.receipt-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 24px }
+.receipt-actions button { min-height: 38px; padding: 0 13px; border: 1px solid #dfe2e6; border-radius: 6px; background: #fff; color: #34423a; font-size: 11px; cursor: pointer }
+.receipt-actions button:last-child { border-color: #263d37; background: #263d37; color: #fff }
+
+:root[data-theme='dark'] .receipt-modal { border-color: var(--dark-border); background: var(--dark-surface); color: var(--dark-text) }
+:root[data-theme='dark'] .receipt-brand { color: #d4e3d9 }
+:root[data-theme='dark'] .receipt-eyebrow,
+:root[data-theme='dark'] .receipt-number,
+:root[data-theme='dark'] .receipt-details dt,
+:root[data-theme='dark'] .receipt-details dd small,
+:root[data-theme='dark'] .receipt-footer { color: var(--dark-muted) }
+:root[data-theme='dark'] .receipt-modal h2,
+:root[data-theme='dark'] .receipt-details dd { color: var(--dark-text) }
+:root[data-theme='dark'] .shipment-action-button { border-color: #496b56; background: #24372d; color: #acd9b9 }
+:root[data-theme='dark'] .shipment-cancel-button { border-color: #704744; background: #402b2a; color: #efb2aa }
+:root[data-theme='dark'] .receipt-rule { background: var(--dark-border) }
+:root[data-theme='dark'] .receipt-details>div { border-color: var(--dark-border) }
+:root[data-theme='dark'] .receipt-actions button:first-child { border-color: var(--dark-border); background: var(--dark-surface-raised); color: var(--dark-text) }
+
+@media print {
+  @page { margin: 18mm }
+  body * { visibility: hidden !important }
+  .receipt-backdrop,
+  .receipt-backdrop * { visibility: visible !important }
+  .receipt-backdrop { position: absolute; inset: 0; display: block !important; overflow: visible; padding: 0; background: #fff !important }
+  .receipt-modal { position: static; width: 100%; max-width: none; padding: 0; border: 0; border-radius: 0; background: #fff !important; color: #202725 !important; box-shadow: none }
+  .receipt-brand,
+  .receipt-modal h2,
+  .receipt-number,
+  .receipt-details dt,
+  .receipt-details dd,
+  .receipt-details dd small,
+  .receipt-footer { color: #202725 !important }
+  .receipt-rule { background: #dfe5e1 !important }
+  .receipt-details>div { border-color: #dfe5e1 !important }
+  .receipt-actions { display: none !important }
+}
 

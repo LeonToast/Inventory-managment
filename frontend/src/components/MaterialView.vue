@@ -1,13 +1,70 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-defineProps<{ isAdmin: boolean }>()
+import { computed, onMounted, reactive, ref } from 'vue'
+const props = defineProps<{ isAdmin: boolean; accessToken: string }>()
 const showMaterialModal = ref(false)
-const materials = [
-  { name: 'Kabeltrumma 25m', id: 'MAT-1024', tag: 'Elektronik', qty: '12', unit: 'st', a: 'Lager A · Sektion 3', b: 'Lager B · Sektion 2', av: '8 st', bv: '4 st', damaged: '1 st' },
-  { name: 'Skyddshandskar', id: 'MAT-1180', tag: 'Förbrukning', qty: '248', unit: 'par', a: 'Lager B · Sektion 1', b: 'Lager C · Sektion 2', av: '180 par', bv: '68 par', damaged: '2 par' },
-  { name: 'Pallställ 1200 kg', id: 'MAT-2042', tag: 'Utrustning', qty: '6', unit: 'st', a: 'Lager A · Sektion 5', b: '', av: '6 st', bv: '', damaged: '1 st' },
-  { name: 'Fraktsedlar', id: 'MAT-2371', tag: 'Förbrukning', qty: '820', unit: 'st', a: 'Lager C · Sektion 2', b: 'Lager A · Sektion 2', av: '500 st', bv: '320 st', damaged: '2 st' },
-]
+type Material = { id: string; sku: string; name: string; category: string; quantity: number; minimum_stock: number; status: string; unit: string; location: string; damaged_count: number }
+const materials = ref<Material[]>([])
+const searchQuery = ref('')
+const categoryFilter = ref('Alla')
+const statusFilter = ref('all')
+const isLoading = ref(false)
+const errorMessage = ref('')
+const formError = ref('')
+const newMaterial = reactive({ name: '', sku: '', category: 'Förbrukning', warehouse: '', section: '', quantity: 0, unit: 'st', damaged_count: 0 })
+const categories = computed(() => ['Alla', ...Array.from(new Set(materials.value.map(material => material.category).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'sv'))])
+const filteredMaterials = computed(() => {
+  const query = searchQuery.value.trim().toLocaleLowerCase('sv-SE')
+  return materials.value.filter(material => {
+    const status = material.status || (material.quantity <= material.minimum_stock ? 'low' : 'available')
+    const matchesCategory = categoryFilter.value === 'Alla' || material.category === categoryFilter.value
+    const matchesStatus = statusFilter.value === 'all'
+      || (statusFilter.value === 'available' && status === 'available')
+      || (statusFilter.value === 'low' && status === 'low')
+      || (statusFilter.value === 'damaged' && material.damaged_count > 0)
+    const searchableText = `${material.name} ${material.sku} ${material.location} ${material.category}`.toLocaleLowerCase('sv-SE')
+    return matchesCategory && matchesStatus && searchableText.includes(query)
+  })
+})
+
+const loadMaterials = async () => {
+  isLoading.value = true
+  errorMessage.value = ''
+  try {
+    const response = await fetch('http://localhost:8000/materials', {
+      headers: { Authorization: `Bearer ${props.accessToken}` },
+    })
+    const result = await response.json().catch(() => null)
+    if (!response.ok) throw new Error(result?.detail || 'Kunde inte hämta material.')
+    materials.value = result
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : 'Kunde inte hämta material.'
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const submitMaterial = async () => {
+  formError.value = ''
+  try {
+    const response = await fetch('http://localhost:8000/materials', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${props.accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(newMaterial),
+    })
+    const result = await response.json().catch(() => null)
+    if (!response.ok) throw new Error(result?.detail || 'Kunde inte spara material.')
+    materials.value.unshift(result)
+    Object.assign(newMaterial, { name: '', sku: '', category: 'Förbrukning', warehouse: '', section: '', quantity: 0, unit: 'st', damaged_count: 0 })
+    showMaterialModal.value = false
+  } catch (error) {
+    formError.value = error instanceof Error ? error.message : 'Kunde inte spara material.'
+  }
+}
+
+onMounted(loadMaterials)
 </script>
 
 <template>
@@ -17,24 +74,33 @@ const materials = [
         <h1>Materiel</h1>
         <p>Material, förbrukning och utrustning i dina lager.</p>
       </div>
-      <div class="material-actions"><span>●　8 skadade enheter · 6 artiklar totalt</span><button v-if="isAdmin"
+      <div class="material-actions"><span>●　{{ materials.reduce((total, material) => total + material.damaged_count, 0) }} skadade enheter · {{ materials.length }} artiklar totalt</span><button v-if="isAdmin"
           @click="showMaterialModal = true">＋　Lägg till material</button></div>
     </div>
     <div class="material-toolbar">
-      <div class="search">⌕　 Sök efter namn, artikelnummer eller lagerplats</div><span>⚑　 Kategori</span>
-      <nav><b>Alla</b><span>Förbrukning</span><span>Utrustning</span><span>Elektronik</span></nav><button>△　Skadade
-        (8)</button>
+      <label class="search"><span aria-hidden="true">⌕</span><input v-model="searchQuery" type="search" aria-label="Sök material" placeholder="Sök namn, artikelnummer eller lagerplats" /></label>
+      <nav aria-label="Filtrera efter kategori">
+        <button v-for="category in categories" :key="category" type="button" :class="{ selected: categoryFilter === category }" :aria-pressed="categoryFilter === category" @click="categoryFilter = category">{{ category }}</button>
+      </nav>
+      <label class="material-status-filter"><span>Status</span><select v-model="statusFilter" aria-label="Filtrera efter status">
+        <option value="all">Alla statusar</option>
+        <option value="available">Tillgänglig</option>
+        <option value="low">Lågt saldo</option>
+        <option value="damaged">Skadad</option>
+      </select></label>
     </div>
-    <div class="material-heading"><b>Material</b><span>1–4 av 6　‹　›</span></div>
+    <div class="material-heading"><b>Material</b><span>{{ filteredMaterials.length }} av {{ materials.length }} artiklar</span></div>
+    <p v-if="isLoading" role="status">Hämtar material...</p>
+    <p v-else-if="errorMessage" role="alert">{{ errorMessage }}</p>
+    <p v-else-if="filteredMaterials.length === 0">Inga material matchar filtren.</p>
     <div class="material-grid">
-      <article v-for="material in materials" :key="material.name" class="material-card">
+      <article v-for="material in filteredMaterials" :key="material.id" class="material-card">
         <div class="material-name"><i>◇</i>
-          <div><b>{{ material.name }}</b><small>{{ material.id }} · 2 lager</small></div><em>{{ material.tag }}</em>
+          <div><b>{{ material.name }}</b><small>{{ material.sku }}</small></div><em>{{ material.category }}</em>
         </div>
-        <hr><label>Fördelning per lager <strong>{{ material.qty }} <small>{{ material.unit }}</small></strong></label>
-        <p>●　{{ material.a }} <b>{{ material.av }}</b></p>
-        <p v-if="material.b">●　{{ material.b }} <b>{{ material.bv }}</b></p>
-        <footer>△　Skadade enheter <b>{{ material.damaged }}</b></footer>
+        <hr><label>Antal i lager <strong>{{ material.quantity }} <small>{{ material.unit }}</small></strong></label>
+        <p>●　{{ material.location }}</p>
+        <footer>△　Skadade enheter <b>{{ material.damaged_count }} {{ material.unit }}</b></footer>
       </article>
     </div>
   </section>
@@ -43,16 +109,17 @@ const materials = [
       <div class="modal-icon">◇</div>
       <h2>Lägg till material</h2>
       <p>Registrera en ny artikel i ditt lager</p>
-      <form @submit.prevent="showMaterialModal = false"><label class="full">Namn<input
-            placeholder="Ex. Kabeltrumma 25m" /></label><label>Artikelnummer<input
-            placeholder="MAT-0000" /></label><label>Kategori<select>
+      <form @submit.prevent="submitMaterial"><label class="full">Namn<input v-model="newMaterial.name" required
+        placeholder="Ex. Kabeltrumma 25m" /></label><label>Artikelnummer<input v-model="newMaterial.sku" required
+        placeholder="MAT-0000" /></label><label>Kategori<select v-model="newMaterial.category">
             <option>Förbrukning</option>
             <option>Elektronik</option>
             <option>Utrustning</option>
-          </select></label><label>Lager<input placeholder="Ex. Lager A" /></label><label>Sektion<input
-            placeholder="Ex. Sektion 1" /></label><label>Antal<input type="number"
-            placeholder="0" /></label><label>Enhet<input placeholder="st, par" /></label><label>Skadade<input
-            type="number" placeholder="0" /></label>
+          </select></label><label>Lager<input v-model="newMaterial.warehouse" required placeholder="Ex. Lager A" /></label><label>Sektion<input
+            v-model="newMaterial.section" required placeholder="Ex. Sektion 1" /></label><label>Antal<input v-model.number="newMaterial.quantity" type="number"
+            min="0" required placeholder="0" /></label><label>Enhet<input v-model="newMaterial.unit" required placeholder="st, par" /></label><label>Skadade<input
+            v-model.number="newMaterial.damaged_count" type="number" min="0" placeholder="0" /></label>
+        <p v-if="formError" class="login-error" role="alert">{{ formError }}</p>
         <div class="modal-actions"><button type="button" @click="showMaterialModal = false">Avbryt</button><button
             type="submit">Spara material</button></div>
       </form>
