@@ -99,10 +99,10 @@ async def login(credentials: LoginCredentials) -> dict[str, str | bool]:
                 raise HTTPException(status_code=401, detail="Authenticator-koden är ogiltig eller har gått ut.")
         account_role = normalize_role(member.get("role"))
         account = {"name": member["name"], "email": member["email"], "role": account_role}
-            try:
-                record_login(database, account)
-            except Exception:
-                logging.exception("Could not record successful login")
+        try:
+            record_login(database, account)
+        except Exception:
+            logging.exception("Could not record successful login")
         return {**account, "access_token": issue_token(account["email"], account["role"])}
     finally:
         client.close()

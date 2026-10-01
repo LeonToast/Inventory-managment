@@ -7,12 +7,15 @@ import ReportsView from './components/ReportsView.vue'
 import CreateReportView from './components/CreateReportView.vue'
 import LandingView from './components/LandingView.vue'
 import SettingsView from './components/SettingsView.vue'
+import WarehouseCapacityView from './components/WarehouseCapacityView.vue'
+import WarehouseCapacityPanel from './components/WarehouseCapacityPanel.vue'
 const showLanding = ref(true)
 const showReportForm = ref(false)
 const currentAccount = ref<{ name: string; email: string; role: string; access_token: string } | null>(null)
 const profileImage = ref('')
 const darkMode = ref(false)
 const profileMenuOpen = ref(false)
+const sidebarLogoutOpen = ref(false)
 const currentTime = ref(new Date())
 const timeLabel = computed(() => currentTime.value.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))
 let clockInterval: ReturnType<typeof setInterval> | undefined
@@ -35,17 +38,21 @@ const recentActivities = ref<ActivityItem[]>([])
 const activityLoading = ref(false)
 const activityError = ref('')
 const selectedActivity = ref<ActivityItem | null>(null)
+const inventorySummary = ref<Array<{ quantity: number; damaged_count: number }>>([])
+const inventorySummaryError = ref('')
+const totalStockQuantity = computed(() => inventorySummary.value.reduce((total, item) => total + item.quantity, 0))
+const damagedStockQuantity = computed(() => inventorySummary.value.reduce((total, item) => total + item.damaged_count, 0))
 const activityDetailLabels: Record<string, string> = {
   shipment_id: 'Ordernummer',
   customer_name: 'Kund',
   material_name: 'Artikel',
+  name: 'Artikel',
   sku: 'Artikelnummer',
   quantity: 'Antal',
   unit: 'Enhet',
   warehouse: 'Lager',
   location: 'Lagerplats',
   category: 'Kategori',
-  name: 'Namn',
   message: 'Information',
 }
 const presentActivity = (entry: ActivityLog): ActivityItem => {
@@ -53,10 +60,15 @@ const presentActivity = (entry: ActivityLog): ActivityItem => {
     label: activityDetailLabels[key] ?? key,
     value: String(value),
   }))
-  const shipment = details.find(detail => detail.label === 'Ordernummer')?.value
-  const customer = details.find(detail => detail.label === 'Kund')?.value
-  const material = details.find(detail => detail.label === 'Artikel')?.value
-  const warehouse = details.find(detail => detail.label === 'Lager')?.value
+  const detailValue = (key: string) => {
+    const value = entry.details?.[key]
+    return value === undefined || value === null ? '' : String(value).trim()
+  }
+  const shipment = detailValue('shipment_id')
+  const customer = detailValue('customer_name')
+  const material = detailValue('material_name') || detailValue('name')
+  const sku = detailValue('sku')
+  const warehouse = detailValue('warehouse')
   const action = {
     login: { title: 'Inloggning', color: 'blue', icon: '↪' },
     material_created: { title: 'Nytt material registrerat', color: 'purple', icon: '◇' },
@@ -65,14 +77,17 @@ const presentActivity = (entry: ActivityLog): ActivityItem => {
     shipment_cancelled: { title: 'Leverans avbruten', color: 'amber', icon: '×' },
   }[entry.action] ?? { title: 'Systemaktivitet', color: 'gray', icon: '·' }
   const description = entry.action === 'login'
-    ? `${entry.actor_role || 'Användare'} · ${entry.actor_id}`
-    : [shipment, customer, material, warehouse].filter(Boolean).join(' · ')
+    ? `${entry.actor_role || 'Användare'} · ${entry.actor_name || entry.actor_id || 'Okänd användare'}`
+    : (entry.action === 'material_created'
+      ? [material, sku, warehouse].filter(Boolean).join(' · ')
+      : [shipment, customer, material, warehouse].filter(Boolean).join(' · '))
+  const actorName = entry.actor_name || entry.actor_id || 'Okänd användare'
   return {
     id: entry.id,
     ...action,
     description,
-    time: new Intl.DateTimeFormat('sv-SE', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(entry.created_at)),
-    actor: entry.actor_name || entry.actor_id || 'Okänd användare',
+    time: new Intl.DateTimeFormat('sv-SE', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).format(new Date(entry.created_at)),
+    actor: actorName.includes('@') ? (entry.actor_role || 'Användare') : actorName,
     details,
   }
 }
@@ -92,6 +107,21 @@ const loadRecentActivities = async () => {
     activityError.value = error instanceof Error ? error.message : 'Kunde inte hämta senaste aktivitet.'
   } finally {
     activityLoading.value = false
+  }
+}
+const loadInventorySummary = async () => {
+  const accessToken = currentAccount.value?.access_token
+  if (!accessToken) return
+  inventorySummaryError.value = ''
+  try {
+    const response = await fetch('http://127.0.0.1:8000/materials', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+    const result = await response.json().catch(() => null)
+    if (!response.ok) throw new Error(result?.detail || 'Kunde inte hämta lagersaldot.')
+    inventorySummary.value = result
+  } catch (error) {
+    inventorySummaryError.value = error instanceof Error ? error.message : 'Kunde inte hämta lagersaldot.'
   }
 }
 type SavedProfile = { name?: string; image?: string; darkMode?: boolean }
@@ -121,7 +151,8 @@ const handleLogin = (account?: { name: string; email: string; role: string; acce
   document.documentElement.dataset.theme = darkMode.value ? 'dark' : 'light'
   currentAccount.value.role = normalizeRole(currentAccount.value.role)
   showLanding.value = false
-    void loadRecentActivities()
+  void loadRecentActivities()
+  void loadInventorySummary()
 }
 const saveProfile = (profile: { name: string; image: string }) => {
   if (!currentAccount.value) return
@@ -142,6 +173,7 @@ const handleLogout = () => {
   darkMode.value = false
   document.documentElement.dataset.theme = 'light'
   profileMenuOpen.value = false
+  sidebarLogoutOpen.value = false
   showReportForm.value = false
   active.value = 'Hem'
   showLanding.value = true
@@ -150,32 +182,50 @@ const handleLogout = () => {
 const pendingAccounts = ref<Array<{ name: string; email: string; submittedAt: string }>>([])
 provide('pendingAccounts', pendingAccounts)
 const active = ref('Hem')
-const nav = computed(() => ['Hem', 'Materiel', 'Leverans', ...(isAdmin.value ? ['Hantera konton'] : []), 'Rapporter', 'Inställningar'])
+const nav = computed(() => ['Hem', 'Materiel', 'Lagerutrymme', 'Leverans', ...(isAdmin.value ? ['Hantera konton'] : []), 'Rapporter', 'Inställningar'])
+const navIcons: Record<string, string> = {
+  Hem: '⌂',
+  Materiel: '◇',
+  Lagerutrymme: '▤',
+  Leverans: '⌾',
+  'Hantera konton': '♧',
+  Rapporter: '▥',
+  Inställningar: '⚙',
+}
 const navigate = (navigationItem: string) => {
   active.value = navigationItem
   showReportForm.value = false
   profileMenuOpen.value = false
-  if (navigationItem === 'Hem') void loadRecentActivities()
+  if (navigationItem === 'Hem') {
+    void loadRecentActivities()
+    void loadInventorySummary()
+  }
 }
-const overviewStatistics = [{ label: 'TOTALT LAGER', value: '1,284', unit: 'enheter', change: '+12' }, { label: 'LEVERERAS', value: '47', unit: 'enheter', change: '+3' }, { label: 'SKADAT', value: '8', unit: 'varningar', change: '-2' }]
-const warehouseCapacities = [{ name: 'Lager A', percentage: '78%', color: 'black' }, { name: 'Lager B', percentage: '61%', color: 'blue' }, { name: 'Lager C', percentage: '43%', color: 'green' }]
+const overviewStatistics = computed(() => [
+  { label: 'TOTALT LAGER', value: totalStockQuantity.value.toLocaleString('sv-SE'), unit: 'enheter' },
+  { label: 'ARTIKELTYPER', value: inventorySummary.value.length.toLocaleString('sv-SE'), unit: 'artiklar' },
+  { label: 'SKADAT', value: damagedStockQuantity.value.toLocaleString('sv-SE'), unit: 'enheter' },
+])
 </script>
 <template>
 <LandingView v-if="showLanding" @login="handleLogin" />
-<div v-else class="app" @click="profileMenuOpen = false">
+<div v-else class="app" @click="profileMenuOpen = false; sidebarLogoutOpen = false">
     <aside>
       <div class="brand"><b>⬡</b><strong>Smart lagring</strong></div>
       <div class="menu"><small>MENY</small><button v-for="navigationItem in nav" :key="navigationItem" :title="navigationItem" :class="{ on: active === navigationItem }"
-          @click="navigate(navigationItem)"><i>{{ ['⌂', '◇', '⌾', '♧', '▥', '⚙'][nav.indexOf(navigationItem)] }}</i>{{ navigationItem }}<em
-            v-if="navigationItem === 'Materiel'">1,284</em></button></div>
-      <div class="user"><img v-if="profileImage" class="user-photo" :src="profileImage" alt="" /><span v-else>{{ currentAccount?.name.slice(0, 2).toUpperCase() }}</span><b>{{ currentAccount?.name }}<small>{{ currentAccount?.role }}</small></b>›</div>
+          @click="navigate(navigationItem)"><i>{{ navIcons[navigationItem] }}</i>{{ navigationItem }}<em
+            v-if="navigationItem === 'Materiel'">{{ totalStockQuantity.toLocaleString('sv-SE') }}</em></button></div>
+      <div class="sidebar-account" @keydown.esc="sidebarLogoutOpen = false">
+        <button class="user" type="button" aria-label="Kontomeny" aria-controls="sidebar-logout" :aria-expanded="sidebarLogoutOpen" @click.stop="sidebarLogoutOpen = !sidebarLogoutOpen; profileMenuOpen = false"><img v-if="profileImage" class="user-photo" :src="profileImage" alt="" /><span v-else>{{ currentAccount?.name.slice(0, 2).toUpperCase() }}</span><b>{{ currentAccount?.name }}<small>{{ currentAccount?.role }}</small></b>⌄</button>
+        <button v-if="sidebarLogoutOpen" id="sidebar-logout" class="sidebar-logout" type="button" @click.stop="handleLogout">↪　Logga ut</button>
+      </div>
     </aside>
     <main>
       <header><span class="crumb">Smart lagring　›　<strong>{{ active === 'Hem' ? 'Översikt' : active }}</strong></span>
         <div class="header-tools">
           <span class="header-time">◷　{{ timeLabel }}</span>
           <div class="account-menu" @keydown.esc="profileMenuOpen = false">
-            <button class="account-trigger" type="button" aria-haspopup="menu" :aria-expanded="profileMenuOpen" @click.stop="profileMenuOpen = !profileMenuOpen">
+            <button class="account-trigger" type="button" aria-haspopup="menu" :aria-expanded="profileMenuOpen" @click.stop="profileMenuOpen = !profileMenuOpen; sidebarLogoutOpen = false">
               <img v-if="profileImage" class="avatar profile-avatar" :src="profileImage" alt="" />
               <span v-else class="avatar">{{ isAdmin ? 'AD' : 'AR' }}</span>
               <span class="account-name">{{ currentAccount?.name }}</span>
@@ -190,7 +240,8 @@ const warehouseCapacities = [{ name: 'Lager A', percentage: '78%', color: 'black
       </header>
       <CreateReportView v-if="showReportForm && isAdmin" @back="showReportForm = false" />
       <DeliveryView v-else-if="active === 'Leverans'" :is-admin="isAdmin" :access-token="currentAccount?.access_token ?? ''" />
-      <MaterialView v-else-if="active === 'Materiel'" :is-admin="isAdmin" :access-token="currentAccount?.access_token ?? ''" />
+      <MaterialView v-else-if="active === 'Materiel'" :is-admin="isAdmin" :access-token="currentAccount?.access_token ?? ''" @materials-updated="loadInventorySummary" />
+      <WarehouseCapacityView v-else-if="active === 'Lagerutrymme'" :is-admin="isAdmin" :access-token="currentAccount?.access_token ?? ''" @open-materials="navigate('Materiel')" />
       <AccountView v-else-if="active === 'Hantera konton' && isAdmin" :is-admin="isAdmin" />
       <ReportsView v-else-if="active === 'Rapporter'" :is-admin="isAdmin" @create-report="showReportForm = true" />
       <SettingsView v-else-if="active === 'Inställningar' && currentAccount" :name="currentAccount.name" :email="currentAccount.email" :profile-image="profileImage" :dark-mode="darkMode" @save-profile="saveProfile" @update-theme="updateTheme" />
@@ -206,8 +257,9 @@ const warehouseCapacities = [{ name: 'Lager A', percentage: '78%', color: 'black
         <div class="stats">
           <article
             v-for="statistic in overviewStatistics"
-            :key="statistic.label"><small>{{ statistic.label }}</small><b>{{ statistic.value }}</b> <span>{{ statistic.unit }}</span><em>{{ statistic.change }}</em></article>
+            :key="statistic.label"><small>{{ statistic.label }}</small><b>{{ statistic.value }}</b> <span>{{ statistic.unit }}</span></article>
         </div>
+        <p v-if="inventorySummaryError" class="activity-state activity-error" role="alert">{{ inventorySummaryError }}</p>
         <div class="grid">
           <div>
             <article class="card activity">
@@ -221,21 +273,10 @@ const warehouseCapacities = [{ name: 'Lager A', percentage: '78%', color: 'black
                 <time>{{ activity.time }}</time><span class="activity-chevron" aria-hidden="true">›</span>
               </button>
             </article>
-            <article class="card overview">
-              <div class="title">
-                <div><b>Lageröversikt</b><small>Aktuell fördelning mellan dina lager.</small></div><a>Visa rapport ›</a>
-              </div>
-              <div class="dist"><i /><i /><i /></div>
-              <p>● Lager A　43%　　　　　　　　　<span>● Lager B　31%　　　　　　　　　● Lager C　26%</span></p>
-            </article>
           </div>
           <div class="right">
             <article class="quick"><b>Snabbåtgärder</b><button v-if="isAdmin" @click="showReportForm = true">＋　Skapa rapport</button></article>
-            <article class="card capacity"><b>Lagerkapacitet</b><small>Totalt</small>
-              <div v-for="capacity in warehouseCapacities" :key="capacity.name">{{ capacity.name }} <span>{{ capacity.percentage }}</span><i><b :class="capacity.color" :style="{ width: capacity.percentage }" /></i></div>
-              <a>Se
-                full rapport　›</a>
-            </article>
+            <WarehouseCapacityPanel :is-admin="isAdmin" :access-token="currentAccount?.access_token ?? ''" compact @open-capacity="navigate('Lagerutrymme')" />
           </div>
         </div>
       </section>

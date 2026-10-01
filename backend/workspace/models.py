@@ -1,7 +1,8 @@
+import re
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, EmailStr, Field, model_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
 
 
 class AccountApplication(BaseModel):
@@ -41,6 +42,33 @@ class MaterialCreate(BaseModel):
     quantity: int = Field(ge=0)
     unit: str = Field(min_length=1, max_length=20)
     damaged_count: int = Field(default=0, ge=0)
+    footprint_length_cm: float = Field(gt=0, le=100_000)
+    footprint_width_cm: float = Field(gt=0, le=100_000)
+
+    @field_validator("unit")
+    @classmethod
+    def validate_unit(cls, value: str) -> str:
+        normalized_unit = value.strip()
+        if not normalized_unit:
+            raise ValueError("Ange en enhet, till exempel st, par eller kg.")
+        if re.fullmatch(r"\d+(?:[.,]\d+)?", normalized_unit):
+            raise ValueError("Enheten måste innehålla text, till exempel st, par eller kg.")
+        return normalized_unit
+
+    @model_validator(mode="after")
+    def validate_damaged_count(self) -> "MaterialCreate":
+        if self.damaged_count > self.quantity:
+            raise ValueError("Antalet skadade enheter kan inte överstiga lagersaldot.")
+        return self
+
+
+class MaterialFootprintUpdate(BaseModel):
+    footprint_length_cm: float = Field(gt=0, le=100_000)
+    footprint_width_cm: float = Field(gt=0, le=100_000)
+
+
+class WarehouseCapacityUpdate(BaseModel):
+    capacity_m2: float = Field(gt=0, le=1_000_000_000)
 
 
 class ShipmentCreate(BaseModel):

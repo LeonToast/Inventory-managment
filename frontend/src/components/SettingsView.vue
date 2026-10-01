@@ -121,13 +121,14 @@ const updateTheme = (event: Event) => {
 
 <style scoped>
 .settings-page {
-  max-width: 900px;
-  padding: 34px 40px;
+  width: 100%;
+  max-width: 1040px;
+  padding: 34px 36px;
   color: var(--settings-text);
 }
 
 .settings-heading {
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
 .settings-heading h1 {
@@ -139,35 +140,50 @@ const updateTheme = (event: Event) => {
 .settings-group-heading p {
   margin: 0;
   color: var(--settings-muted);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .settings-content {
-  border-top: 1px solid var(--settings-border);
+  display: grid;
+  gap: 16px;
 }
 
 .settings-group {
   display: grid;
-  grid-template-columns: minmax(150px, 0.7fr) minmax(260px, 1.3fr);
-  gap: 32px;
-  padding: 26px 0;
+  gap: 22px;
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--settings-border);
+  border-radius: 12px;
+  background: var(--settings-surface);
+  box-shadow: 0 8px 24px rgb(26 43 34 / 5%);
+}
+
+.settings-group-heading {
+  padding-bottom: 16px;
   border-bottom: 1px solid var(--settings-border);
 }
 
 .settings-group-heading h2 {
-  margin: 0 0 6px;
-  font-size: 15px;
+  margin: 0 0 5px;
+  color: var(--settings-text);
+  font-size: 16px;
+  font-weight: 600;
 }
 
 .profile-form {
   display: grid;
-  gap: 18px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 18px 20px;
 }
 
 .profile-photo-row {
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
+  padding: 2px 0 4px;
 }
 
 .settings-photo {
@@ -195,7 +211,9 @@ const updateTheme = (event: Event) => {
 
 .photo-controls strong,
 .theme-setting strong {
-  font-size: 12px;
+  color: var(--settings-text);
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .photo-actions {
@@ -207,51 +225,70 @@ const updateTheme = (event: Event) => {
 .photo-controls small,
 .theme-setting small {
   color: var(--settings-muted);
-  font-size: 11px;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .settings-field {
   display: grid;
   gap: 7px;
   color: var(--settings-text);
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 500;
 }
 
 .settings-field input {
   width: 100%;
-  height: 40px;
-  padding: 0 11px;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
   border: 1px solid var(--settings-border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--settings-field);
   color: var(--settings-text);
   font: inherit;
 }
 
 .settings-field p {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
   margin: 0;
+  padding: 0 12px;
+  border: 1px solid var(--settings-border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--settings-surface) 75%, var(--settings-muted) 25%);
   color: var(--settings-muted);
+  font-weight: 400;
 }
 
 .settings-secondary,
 .settings-primary {
-  min-height: 36px;
-  padding: 0 13px;
+  min-height: 40px;
+  padding: 0 15px;
   border: 1px solid var(--settings-border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--settings-surface);
   color: var(--settings-text);
   font: inherit;
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
 }
 
 .settings-primary {
   justify-self: start;
+  min-width: 126px;
   border-color: #263d37;
   background: #263d37;
   color: #fff;
   font-weight: 600;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.settings-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgb(38 61 55 / 20%);
 }
 
 .settings-text-button {
@@ -264,9 +301,10 @@ const updateTheme = (event: Event) => {
 }
 
 .settings-message {
+  grid-column: 1 / -1;
   margin: -6px 0 0;
   color: #337b5b;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .settings-error {
@@ -277,20 +315,25 @@ const updateTheme = (event: Event) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
+  padding: 18px;
+  border: 1px solid var(--settings-border);
+  border-radius: 10px;
+  background: var(--settings-field);
 }
 
 .theme-setting span {
   display: grid;
-  gap: 5px;
+  gap: 6px;
+  min-width: 0;
 }
 
 .theme-setting input {
-  width: 42px;
-  height: 24px;
+  width: 48px;
+  height: 28px;
   flex: none;
   appearance: none;
-  border: 1px solid #98a29e;
+  border: 1px solid #87968e;
   border-radius: 99px;
   background: #d9dfdc;
   cursor: pointer;
@@ -299,8 +342,8 @@ const updateTheme = (event: Event) => {
 
 .theme-setting input::before {
   display: block;
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   margin: 2px;
   border-radius: 50%;
   background: #fff;
@@ -314,7 +357,7 @@ const updateTheme = (event: Event) => {
 }
 
 .theme-setting input:checked::before {
-  transform: translateX(18px);
+  transform: translateX(20px);
 }
 
 .theme-setting input:focus-visible,
@@ -337,12 +380,41 @@ const updateTheme = (event: Event) => {
 
 @media (max-width: 700px) {
   .settings-page {
-    padding: 28px 20px;
+    padding: 26px 18px;
   }
 
   .settings-group {
-    grid-template-columns: 1fr;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-page {
+    padding: 22px 12px;
+  }
+
+  .settings-group {
     gap: 18px;
+    padding: 16px;
+  }
+
+  .profile-form {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 15px;
+  }
+
+  .profile-photo-row {
+    gap: 13px;
+  }
+
+  .settings-photo {
+    width: 64px;
+    height: 64px;
+  }
+
+  .theme-setting {
+    gap: 12px;
+    padding: 14px;
   }
 }
 </style>

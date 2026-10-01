@@ -1,3 +1,4 @@
+import os
 from datetime import datetime, timezone
 from typing import Any
 
@@ -73,7 +74,7 @@ async def validate_account_application(application_id: str, _: dict[str, str] = 
         }
         if application.get("two_factor_enabled"):
             member["totp_secret_encrypted"] = application["totp_secret_encrypted"]
-        client["inventory-manager"]["Medlem"].insert_one(member)
+        client[os.getenv("MONGODB_DB_NAME", "inventory-manager")]["Medlem"].insert_one(member)
         collection.update_one({"_id": object_id}, {"$set": {"status": "validated", "approved_role": "Worker"}})
         return {"status": "validated", "role": "Worker"}
     finally:

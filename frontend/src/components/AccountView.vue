@@ -71,9 +71,15 @@ const rejectApplication = async (id: string) => {
 
 const deleteMember = async (member: Member) => {
   if (!window.confirm(`Ta bort inloggningen för ${member.name} (${member.email})?`)) return
-  const response = await fetch(`http://127.0.0.1:8000/members/${member.id}`, { method: 'DELETE', headers: adminHeaders() })
-  if (response.ok) await loadMembers()
-  else error.value = 'Kunde inte ta bort inloggningen.'
+  error.value = ''
+  try {
+    const response = await fetch(`http://127.0.0.1:8000/members/${member.id}`, { method: 'DELETE', headers: adminHeaders() })
+    const result = await response.json().catch(() => null)
+    if (!response.ok) throw new Error(result?.detail || 'Kunde inte ta bort inloggningen.')
+    await loadMembers()
+  } catch (reason) {
+    error.value = reason instanceof Error ? reason.message : 'Kunde inte ta bort inloggningen.'
+  }
 }
 
 const updateRole = async (member: Member, role: 'Worker' | 'Medlem' | 'Admin') => {
