@@ -216,7 +216,7 @@ const overviewStatistics = computed(() => [
           @click="navigate(navigationItem)"><i>{{ navIcons[navigationItem] }}</i>{{ navigationItem }}<em
             v-if="navigationItem === 'Materiel'">{{ totalStockQuantity.toLocaleString('sv-SE') }}</em></button></div>
       <div class="sidebar-account" @keydown.esc="sidebarLogoutOpen = false">
-        <button class="user" type="button" aria-label="Kontomeny" aria-controls="sidebar-logout" :aria-expanded="sidebarLogoutOpen" @click.stop="sidebarLogoutOpen = !sidebarLogoutOpen; profileMenuOpen = false"><img v-if="profileImage" class="user-photo" :src="profileImage" alt="" /><span v-else>{{ currentAccount?.name.slice(0, 2).toUpperCase() }}</span><b>{{ currentAccount?.name }}<small>{{ currentAccount?.role }}</small></b>⌄</button>
+        <button class="user" type="button" :aria-label="sidebarLogoutOpen ? 'Stäng kontomenyn' : 'Öppna kontomenyn'" aria-controls="sidebar-logout" :aria-expanded="sidebarLogoutOpen" @click.stop="sidebarLogoutOpen = !sidebarLogoutOpen; profileMenuOpen = false"><img v-if="profileImage" class="user-photo" :src="profileImage" alt="" /><span v-else>{{ currentAccount?.name.slice(0, 2).toUpperCase() }}</span><b>{{ currentAccount?.name }}<small>{{ currentAccount?.role }}</small></b><svg class="sidebar-account-caret" viewBox="0 0 12 12" aria-hidden="true"><path d="m3 4.5 3 3 3-3" /></svg></button>
         <button v-if="sidebarLogoutOpen" id="sidebar-logout" class="sidebar-logout" type="button" @click.stop="handleLogout">↪　Logga ut</button>
       </div>
     </aside>
@@ -238,12 +238,12 @@ const overviewStatistics = computed(() => [
           </div>
         </div>
       </header>
-      <CreateReportView v-if="showReportForm && isAdmin" @back="showReportForm = false" />
+      <CreateReportView v-if="showReportForm && isAdmin" :access-token="currentAccount?.access_token ?? ''" @back="showReportForm = false; active = 'Rapporter'" @created="showReportForm = false; active = 'Rapporter'" />
       <DeliveryView v-else-if="active === 'Leverans'" :is-admin="isAdmin" :access-token="currentAccount?.access_token ?? ''" />
       <MaterialView v-else-if="active === 'Materiel'" :is-admin="isAdmin" :access-token="currentAccount?.access_token ?? ''" @materials-updated="loadInventorySummary" />
       <WarehouseCapacityView v-else-if="active === 'Lagerutrymme'" :is-admin="isAdmin" :access-token="currentAccount?.access_token ?? ''" @open-materials="navigate('Materiel')" />
       <AccountView v-else-if="active === 'Hantera konton' && isAdmin" :is-admin="isAdmin" />
-      <ReportsView v-else-if="active === 'Rapporter'" :is-admin="isAdmin" @create-report="showReportForm = true" />
+      <ReportsView v-else-if="active === 'Rapporter'" :is-admin="isAdmin" :access-token="currentAccount?.access_token ?? ''" @create-report="showReportForm = true" />
       <SettingsView v-else-if="active === 'Inställningar' && currentAccount" :name="currentAccount.name" :email="currentAccount.email" :profile-image="profileImage" :dark-mode="darkMode" @save-profile="saveProfile" @update-theme="updateTheme" />
 
 

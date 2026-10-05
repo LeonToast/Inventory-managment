@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 
 from pydantic import BaseModel, EmailStr, Field, field_validator, model_validator
@@ -80,6 +80,20 @@ class ShipmentCreate(BaseModel):
 
 class ShipmentStatusUpdate(BaseModel):
     status: Literal["delivered", "cancelled"]
+
+
+class ReportCreate(BaseModel):
+    report_type: Literal["inventory", "deliveries", "low_stock", "damaged", "capacity", "activity"]
+    start_date: date
+    end_date: date
+    warehouse_id: str | None = None
+    description: str = Field(default="", max_length=500)
+
+    @model_validator(mode="after")
+    def validate_report_period(self) -> "ReportCreate":
+        if self.end_date < self.start_date:
+            raise ValueError("Slutdatumet måste vara samma dag eller senare än startdatumet.")
+        return self
 
 
 class ApplicationResponse(BaseModel):

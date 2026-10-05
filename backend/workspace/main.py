@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
-from .routers import activity, applications, auth, materials, members, shipments
+from .routers import activity, applications, auth, materials, members, reports, shipments
 
 allowed_origins = [
     origin.strip()
@@ -43,4 +43,5 @@ app.include_router(applications.router)
 app.include_router(members.router)
 app.include_router(materials.router)
 app.include_router(shipments.router)
+app.include_router(reports.router)
 app.include_router(activity.router)
